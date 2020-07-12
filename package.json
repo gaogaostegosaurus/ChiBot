@@ -2,7 +2,12 @@
     "name": "chibot",
     "version": "1.0.1",
     "description": "",
+    "repository": "",
     "main": "bot.js",
     "author": "",
-    "dependencies": {}
+    "license": "",
+    "dependencies": {
+        "discord.js": "^12.2.0",
+        "dotenv": "^8.2.0"
+    }
 }
