@@ -1,10 +1,15 @@
+/* eslint no-param-reassign: ["error", { "props": false }] */
+// Notes to self
+// Bot requires delete permission (will complain but work otherwise)
+// Likely best to give only bot permission to add reactions
+
 /* eslint-disable no-console */
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 
 const client = new Discord.Client();
 
-const playerSignup = ({
+const makeStartingRoster = ({
   reaction,
   signups,
   starters,
@@ -12,12 +17,25 @@ const playerSignup = ({
   signupEmbed,
   embedMessage,
 } = {}) => {
-  signups.all.forEach((id) => {
-    // Attempt to place player in role in most needed position
+  // This function when called deletes and re-generates the data showing who is in what role
 
+  // Delete all data first
+  starters.all = [];
+  starters.tank = [];
+  starters.healer = [];
+  starters.dps = [];
+
+  backups.all = [];
+
+  // Loop through entire signup array to decide who goes where
+  signups.all.forEach((id) => {
+    // Calculate which role has the greatest current need
     const tankInNeed = starters.tankMax - signups.tank.length;
     const healerInNeed = starters.healerMax - signups.healer.length;
     const dpsInNeed = starters.dpsMax - signups.dps.length;
+    console.log(`In need numbers: Tank=${tankInNeed} Healer=${healerInNeed} DPS=${dpsInNeed}`);
+
+    // Attempt to place player in roles that have not enough or just enough signups
 
     if (tankInNeed >= Math.max(healerInNeed, dpsInNeed, 1) && signups.tank.includes(id)) {
       console.log('Player placed as tank starter');
@@ -40,8 +58,7 @@ const playerSignup = ({
       return;
     }
 
-    // Place player in role with greatest number of open starter positions
-    // Not sure about this algorithm...
+    // Place player in the role with largest current number of open starter positions
 
     const tankOpenings = starters.tankMax - starters.tank.length;
     const healerOpenings = starters.healerMax - starters.healer.length;
@@ -205,6 +222,7 @@ client.on('message', (message) => {
 
     message.channel.send(signupEmbed)
       .then(async (embedMessage) => {
+        // Define job emojis
         const pldEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'pld');
         const warEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'war');
         const drkEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'drk');
@@ -284,7 +302,7 @@ client.on('message', (message) => {
             console.log(`Current list of DPS signups: ${JSON.stringify(signups.dps)}`);
           }
 
-          playerSignup({
+          makeStartingRoster({
             reaction, signups, starters, backups, signupEmbed, embedMessage,
           });
         });
@@ -332,7 +350,7 @@ client.on('message', (message) => {
             console.log(`Current list of signups: ${JSON.stringify(signups.all)}`);
           }
 
-          playerSignup({
+          makeStartingRoster({
             reaction, signups, starters, backups, signupEmbed, embedMessage,
           });
         });
