@@ -1,13 +1,28 @@
 {
-    "name": "chibot",
-    "version": "1.0.1",
-    "description": "",
-    "repository": "",
-    "main": "bot.js",
-    "author": "",
-    "license": "",
-    "dependencies": {
-        "discord.js": "^12.2.0",
-        "dotenv": "^8.2.0"
-    }
+  "name": "ChiBot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gaogaostegosaurus/ChiBot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gaogaostegosaurus/ChiBot/issues"
+  },
+  "homepage": "https://github.com/gaogaostegosaurus/ChiBot#readme",
+  "dependencies": {
+    "discord.js": "^12.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.4.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0"
+  }
 }
