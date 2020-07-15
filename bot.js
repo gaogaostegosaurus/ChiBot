@@ -264,6 +264,7 @@ client.on('message', (message) => {
         await embedMessage.react(mnkEmoji);
         await embedMessage.react(drgEmoji);
         await embedMessage.react(ninEmoji);
+        await embedMessage.react(brdEmoji);
         await embedMessage.react(mchEmoji);
         await embedMessage.react(dncEmoji);
         await embedMessage.react(blmEmoji);
