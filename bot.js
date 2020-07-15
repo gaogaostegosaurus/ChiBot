@@ -1,15 +1,16 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
-// Notes to self
+/* eslint-disable no-console */
+/* eslint-disable prefer-destructuring */
+
 // Bot requires delete permission (will complain but work otherwise)
 // Likely best to give only bot permission to add reactions
 
-/* eslint-disable no-console */
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 
 const client = new Discord.Client();
 
-const makeStartingRoster = ({
+const chooseStarters = ({
   reaction,
   signups,
   starters,
@@ -148,30 +149,67 @@ client.once('ready', () => {
 });
 
 client.on('message', (message) => {
-  /* Stop early if message isn't for bot */
+  // Stop early if message isn't for bot
   if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+  // Define jobs
+  const tankJobs = ['pld', 'war', 'drk', 'gnb'];
+  const healerJobs = ['whm', 'sch', 'ast'];
+  const dpsJobs = ['mnk', 'drg', 'nin', 'sam', 'brd', 'mch', 'dnc', 'blm', 'smn', 'rdm'];
+  const allJobs = tankJobs.concat(healerJobs, dpsJobs);
+
+  // Define job emojis
+  const reactionEmoji = {};
+
+  const jobEmojis = [];
+  allJobs.forEach((job) => {
+    reactionEmoji[job] = message.guild.emojis.cache.find((emoji) => emoji.name === job);
+    jobEmojis.push(reactionEmoji[job]);
+  });
+
+  // const pldEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'pld');
+  // const warEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'war');
+  // const drkEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'drk');
+  // const gnbEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'gnb');
+  // const whmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'whm');
+  // const schEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'sch');
+  // const astEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'ast');
+  // const mnkEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'mnk');
+  // const drgEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'drg');
+  // const ninEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'nin');
+  // const samEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'sam');
+  // const brdEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'brd');
+  // const mchEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'mch');
+  // const dncEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'dnc');
+  // const blmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'blm');
+  // const smnEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'smn');
+  // const rdmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'rdm');
+  // const nojobEmoji = message.guild.emojis.cache.find(emoji => emoji.name === 'nojob');
+
+  // const jobEmojis = [
+  //   pldEmoji, warEmoji, drkEmoji, gnbEmoji,
+  //   whmEmoji, schEmoji, astEmoji,
+  //   mnkEmoji, drgEmoji, ninEmoji, samEmoji,
+  //   brdEmoji, mchEmoji, dncEmoji,
+  //   blmEmoji, smnEmoji, rdmEmoji,
+  // ];
+
+  const signups = {};
+  signups.tank = [];
+  signups.healer = [];
+  signups.dps = [];
+  signups.all = [];
+
+  allJobs.forEach((job) => {
+    signups[job] = [];
+  });
+
+  const starters = {};
 
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
   if (command === 'test') {
-    const tankJobs = ['pld', 'war', 'drk', 'gnb'];
-    const healerJobs = ['whm', 'sch', 'ast'];
-    const dpsJobs = ['mnk', 'drg', 'nin', 'sam', 'brd', 'mch', 'dnc', 'blm', 'smn', 'rdm'];
-    const allJobs = tankJobs.concat(healerJobs, dpsJobs);
-
-    const signups = {};
-    signups.tank = [];
-    signups.healer = [];
-    signups.dps = [];
-    signups.all = [];
-
-    allJobs.forEach((job) => {
-      signups[job] = [];
-    });
-
-    const starters = {};
-
     const backups = {};
     backups.all = [];
     if (args[0] === 'light') {
@@ -186,6 +224,10 @@ client.on('message', (message) => {
       starters.tankMax = 3;
       starters.healerMax = 6;
       starters.dpsMax = 15;
+    } else if (args[0] === 'custom') {
+      starters.tankMax = args[1];
+      starters.healerMax = args[2];
+      starters.dpsMax = args[3];
     } else {
       starters.tankMax = 2;
       starters.healerMax = 2;
@@ -197,80 +239,35 @@ client.on('message', (message) => {
       .catch(console.error);
 
     const signupEmbed = new Discord.MessageEmbed()
-    // .setColor('#0099ff')
       .setTitle('Signup')
-    // .setURL('https://discord.js.org/')
-    // .setAuthor('Some name', 'https://i.imgur.com/wSTFkRM.png', 'https://discord.js.org')
-    // .setDescription('Some description here')
-    // .setThumbnail('https://i.imgur.com/wSTFkRM.png')
-    // .addFields(
-    //   { name: 'Tank', value: 'Some value here', inline: true },
-    //   { name: 'Tank', value: 'Some value here', inline: true },
-    //   { name: '\u200B', value: '\u200B' }, // Adds a blank field
-    //   { name: 'Healer', value: 'Some value here', inline: true },
-    //   { name: 'Healer', value: 'Some value here', inline: true },
-    //   { name: '\u200B', value: '\u200B' }, // Adds a blank field
-    //   { name: 'DPS', value: 'Some value here', inline: true },
-    //   { name: 'DPS', value: 'Some value here', inline: true },
-    //   { name: 'DPS', value: 'Some value here', inline: true },
-    //   { name: 'DPS', value: 'Some value here', inline: true },
-    // )// .setImage('https://i.imgur.com/wSTFkRM.png')
       .setTimestamp();
-    // .setFooter('Some footer text here', 'https://i.imgur.com/wSTFkRM.png');
-    // const reactionFilter = (reaction, user) => jobEmojis.includes(reaction.emoji.name);
-    // const reactionFilter = (reaction) => jobEmojis.includes(reaction.emoji.name);
 
     message.channel.send(signupEmbed)
-      .then(async (embedMessage) => {
-        // Define job emojis
-        const pldEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'pld');
-        const warEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'war');
-        const drkEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'drk');
-        const gnbEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'gnb');
-        const whmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'whm');
-        const schEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'sch');
-        const astEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'ast');
-        const mnkEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'mnk');
-        const drgEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'drg');
-        const ninEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'nin');
-        const samEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'sam');
-        const brdEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'brd');
-        const mchEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'mch');
-        const dncEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'dnc');
-        const blmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'blm');
-        const smnEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'smn');
-        const rdmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'rdm');
-        // const nojobEmoji = message.guild.emojis.cache.find(emoji => emoji.name === 'nojob');
-
-        const jobEmojis = [
-          pldEmoji, warEmoji, drkEmoji, gnbEmoji,
-          whmEmoji, schEmoji, astEmoji,
-          mnkEmoji, drgEmoji, ninEmoji, samEmoji,
-          brdEmoji, mchEmoji, dncEmoji,
-          blmEmoji, smnEmoji, rdmEmoji,
-        ];
-
-        console.log(JSON.stringify(embedMessage));
+      .then((embedMessage) => {
+        // console.log(JSON.stringify(embedMessage));
         const filter = (reaction, user) => jobEmojis.includes(reaction.emoji) && !user.bot;
         const collector = embedMessage.createReactionCollector(filter, { dispose: true });
+        jobEmojis.forEach(async (emoji) => {
+          await embedMessage.react(emoji);
+        });
 
-        await embedMessage.react(pldEmoji);
-        await embedMessage.react(warEmoji);
-        await embedMessage.react(drkEmoji);
-        await embedMessage.react(gnbEmoji);
-        await embedMessage.react(whmEmoji);
-        await embedMessage.react(schEmoji);
-        await embedMessage.react(astEmoji);
-        await embedMessage.react(mnkEmoji);
-        await embedMessage.react(drgEmoji);
-        await embedMessage.react(ninEmoji);
-        await embedMessage.react(samEmoji);
-        await embedMessage.react(brdEmoji);
-        await embedMessage.react(mchEmoji);
-        await embedMessage.react(dncEmoji);
-        await embedMessage.react(blmEmoji);
-        await embedMessage.react(smnEmoji);
-        await embedMessage.react(rdmEmoji);
+        // await embedMessage.react(pldEmoji);
+        // await embedMessage.react(warEmoji);
+        // await embedMessage.react(drkEmoji);
+        // await embedMessage.react(gnbEmoji);
+        // await embedMessage.react(whmEmoji);
+        // await embedMessage.react(schEmoji);
+        // await embedMessage.react(astEmoji);
+        // await embedMessage.react(mnkEmoji);
+        // await embedMessage.react(drgEmoji);
+        // await embedMessage.react(ninEmoji);
+        // await embedMessage.react(samEmoji);
+        // await embedMessage.react(brdEmoji);
+        // await embedMessage.react(mchEmoji);
+        // await embedMessage.react(dncEmoji);
+        // await embedMessage.react(blmEmoji);
+        // await embedMessage.react(smnEmoji);
+        // await embedMessage.react(rdmEmoji);
 
         collector.on('collect', (reaction, user) => {
         // Reset starter lists
@@ -304,7 +301,7 @@ client.on('message', (message) => {
             console.log(`Current list of DPS signups: ${JSON.stringify(signups.dps)}`);
           }
 
-          makeStartingRoster({
+          chooseStarters({
             reaction, signups, starters, backups, signupEmbed, embedMessage,
           });
         });
@@ -352,21 +349,12 @@ client.on('message', (message) => {
             console.log(`Current list of signups: ${JSON.stringify(signups.all)}`);
           }
 
-          makeStartingRoster({
+          chooseStarters({
             reaction, signups, starters, backups, signupEmbed, embedMessage,
           });
         });
-
-        // collector.on('end', (collected) => console.log(`Collected ${collected.size} items`));
-
-        // collector.on('collect', (r) => console.log(`Collected ${r} ${r.emoji.name}`));
-        // stuff
-      });
+      }).catch(console.error);
   }
 });
 
-// Add user to a db of name / job clicked
-// Refactor fields in embed
-
-// login to Discord with your app's token
 client.login(token);
