@@ -161,7 +161,10 @@ const chooseStarters = ({
     }
   });
   // signupEmbed.addField('Tank', reaction.emoji.guild.members.cache.get(id).displayName);
-  signupEmbed.addField('Tank', tankFieldValue);
+  
+  if (tankFieldValue) {
+    signupEmbed.addField('Tanks', tankFieldValue);
+  }
 
   starters.healer.forEach((id) => {
     signupEmbed.addField('Healer', reaction.emoji.guild.members.cache.get(id).displayName);
