@@ -21,6 +21,7 @@ const client = new Discord.Client();
 
 const chooseStarters = ({
   reaction,
+  reactionEmoji,
   signups,
   tankMax,
   healerMax,
@@ -138,21 +139,29 @@ const chooseStarters = ({
 
   // Regenerate embed
   signupEmbed.fields = [];
-  const tankFieldValue = '';
+  let tankFieldValue = '';
   const healerFieldValue = '';
   const dpsFieldValue = '';
 
   starters.tank.forEach((id) => {
-    signupEmbed.addField('Tank', reaction.emoji.guild.members.cache.get(id).displayName);
+    let jobIcons = '';
+    tankJobs.forEach((job) => {
+      if (signups[job].includes(id)) {
+        jobIcons = jobIcons.concat(reactionEmoji[job]);
+      }
+    });
 
-    // let displayName = reaction.emoji.guild.members.cache.get(id).displayName;
-    // tankJobs.forEach((job) => {
-    //   if (signups[job].includes(id)) {
-    //     displayName = displayName.concat(`{${job}}`);
-    //   }
-    // });
-    // tankFieldValue = tankFieldValue.concat(displayName);
+    // Set displayName to job icons + Discord nickname
+    const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
+
+    tankFieldValue = tankFieldValue.concat(displayName);
+
+    if (starters.tank.indexOf(id) < starters.tank.length - 1) {
+      tankFieldValue = tankFieldValue.concat('/n');
+    }
   });
+  // signupEmbed.addField('Tank', reaction.emoji.guild.members.cache.get(id).displayName);
+  signupEmbed.addField('Tank', tankFieldValue);
 
   starters.healer.forEach((id) => {
     signupEmbed.addField('Healer', reaction.emoji.guild.members.cache.get(id).displayName);
@@ -230,7 +239,8 @@ client.on('message', (message) => {
       .catch(console.error);
 
     const signupEmbed = new Discord.MessageEmbed()
-      .setTitle(`Signup {whm} :whm: ${reactionEmoji.whm}`)
+      .setTitle('Signup')
+      // .setTitle(`Signup {whm} :whm: ${reactionEmoji.whm}`)
       .setTimestamp();
 
     message.channel.send(signupEmbed)
@@ -289,6 +299,7 @@ client.on('message', (message) => {
 
           chooseStarters({
             reaction,
+            reactionEmoji,
             signups,
             tankMax,
             healerMax,
@@ -338,6 +349,7 @@ client.on('message', (message) => {
 
           chooseStarters({
             reaction,
+            reactionEmoji,
             signups,
             tankMax,
             healerMax,
