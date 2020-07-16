@@ -140,8 +140,9 @@ const chooseStarters = ({
   // Regenerate embed
   signupEmbed.fields = [];
   let tankFieldValue = '';
-  const healerFieldValue = '';
-  const dpsFieldValue = '';
+  let healerFieldValue = '';
+  let dpsFieldValue = '';
+  let backupFieldValue = '';
 
   starters.tank.forEach((id) => {
     let jobIcons = '';
@@ -160,23 +161,76 @@ const chooseStarters = ({
       tankFieldValue = tankFieldValue.concat('/n');
     }
   });
-  // signupEmbed.addField('Tank', reaction.emoji.guild.members.cache.get(id).displayName);
-  
-  if (tankFieldValue) {
+
+  if (tankFieldValue) { // Crashes if the field is empty
     signupEmbed.addField('Tanks', tankFieldValue);
   }
 
   starters.healer.forEach((id) => {
-    signupEmbed.addField('Healer', reaction.emoji.guild.members.cache.get(id).displayName);
+    let jobIcons = '';
+    healerJobs.forEach((job) => {
+      if (signups[job].includes(id)) {
+        jobIcons = jobIcons.concat(reactionEmoji[job]);
+      }
+    });
+
+    // Set displayName to job icons + Discord nickname
+    const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
+
+    healerFieldValue = healerFieldValue.concat(displayName);
+
+    if (starters.tank.indexOf(id) < starters.tank.length - 1) {
+      healerFieldValue = healerFieldValue.concat('/n');
+    }
   });
+
+  if (healerFieldValue) {
+    signupEmbed.addField('Healers', healerFieldValue);
+  }
 
   starters.dps.forEach((id) => {
-    signupEmbed.addField('DPS', reaction.emoji.guild.members.cache.get(id).displayName);
+    let jobIcons = '';
+    dpsJobs.forEach((job) => {
+      if (signups[job].includes(id)) {
+        jobIcons = jobIcons.concat(reactionEmoji[job]);
+      }
+    });
+
+    // Set displayName to job icons + Discord nickname
+    const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
+
+    dpsFieldValue = dpsFieldValue.concat(displayName);
+
+    if (starters.tank.indexOf(id) < starters.tank.length - 1) {
+      dpsFieldValue = dpsFieldValue.concat('/n');
+    }
   });
 
+  if (dpsFieldValue) {
+    signupEmbed.addField('Healers', dpsFieldValue);
+  }
+
   backups.all.forEach((id) => {
-    signupEmbed.addField('Backup', reaction.emoji.guild.members.cache.get(id).displayName);
+    let jobIcons = '';
+    allJobs.forEach((job) => {
+      if (signups[job].includes(id)) {
+        jobIcons = jobIcons.concat(reactionEmoji[job]);
+      }
+    });
+
+    // Set displayName to job icons + Discord nickname
+    const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
+
+    backupFieldValue = backupFieldValue.concat(displayName);
+
+    if (starters.tank.indexOf(id) < starters.tank.length - 1) {
+      backupFieldValue = backupFieldValue.concat('/n');
+    }
   });
+
+  if (backupFieldValue) {
+    signupEmbed.addField('Healers', backupFieldValue);
+  }
 
   embedMessage.edit(signupEmbed);
 };
