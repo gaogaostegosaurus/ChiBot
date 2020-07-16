@@ -230,7 +230,7 @@ client.on('message', (message) => {
       .catch(console.error);
 
     const signupEmbed = new Discord.MessageEmbed()
-      .setTitle('Signup {whm} :whm:')
+      .setTitle(`Signup {whm} :whm: ${whm}`)
       .setTimestamp();
 
     message.channel.send(signupEmbed)
