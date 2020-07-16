@@ -145,6 +145,8 @@ const chooseStarters = ({
   let backupFieldValue = '';
 
   starters.tank.forEach((id) => {
+    // Each of these sections does roughly the same things
+    // Create string of icons for this ID
     let jobIcons = '';
     tankJobs.forEach((job) => {
       if (signups[job].includes(id)) {
@@ -152,17 +154,17 @@ const chooseStarters = ({
       }
     });
 
-    // Set displayName to job icons + Discord nickname
+    // Set displayName to job icons + Discord nickname and add it to field
     const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
-
     tankFieldValue = tankFieldValue.concat(displayName);
 
+    // Add a line break if not final ID
     if (starters.tank.indexOf(id) < starters.tank.length - 1) {
       tankFieldValue = tankFieldValue.concat('\n');
     }
   });
 
-  if (tankFieldValue) { // Crashes if the field is empty
+  if (tankFieldValue) { // Prevents crash if the field is empty
     signupEmbed.addField('Tanks', tankFieldValue);
   }
 
@@ -173,12 +175,8 @@ const chooseStarters = ({
         jobIcons = jobIcons.concat(reactionEmoji[job]);
       }
     });
-
-    // Set displayName to job icons + Discord nickname
     const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
-
     healerFieldValue = healerFieldValue.concat(displayName);
-
     if (starters.healer.indexOf(id) < starters.healer.length - 1) {
       healerFieldValue = healerFieldValue.concat('\n');
     }
@@ -195,12 +193,8 @@ const chooseStarters = ({
         jobIcons = jobIcons.concat(reactionEmoji[job]);
       }
     });
-
-    // Set displayName to job icons + Discord nickname
     const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
-
     dpsFieldValue = dpsFieldValue.concat(displayName);
-
     if (starters.dps.indexOf(id) < starters.dps.length - 1) {
       dpsFieldValue = dpsFieldValue.concat('\n');
     }
@@ -211,20 +205,12 @@ const chooseStarters = ({
   }
 
   backups.all.forEach((id) => {
-    let jobIcons = '';
-    allJobs.forEach((job) => {
-      if (signups[job].includes(id)) {
-        jobIcons = jobIcons.concat(reactionEmoji[job]);
-      }
-    });
-
-    // Set displayName to job icons + Discord nickname
-    const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
-
+    // Backup field doesn't use job icons
+    const displayName = reaction.emoji.guild.members.cache.get(id).displayName;
     backupFieldValue = backupFieldValue.concat(displayName);
-
     if (backups.all.indexOf(id) < backups.all.length - 1) {
-      backupFieldValue = backupFieldValue.concat('\n');
+      // Since backup list might be long, comma + space separated seems better
+      backupFieldValue = backupFieldValue.concat(', ');
     }
   });
 
