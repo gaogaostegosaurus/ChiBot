@@ -44,7 +44,7 @@ const chooseStarters = ({
 
   // Loop through entire signup array to decide who goes where
   signups.all.forEach((id) => {
-    // Calculate which role has the greatest current need
+    // Calculate which role has the greatest current need (largest value for slots - signups)
     const tankInNeed = tankMax - signups.tank.length;
     const healerInNeed = healerMax - signups.healer.length;
     const dpsInNeed = dpsMax - signups.dps.length;
@@ -53,21 +53,18 @@ const chooseStarters = ({
     // Attempt to place player in roles that have not enough or just enough signups
 
     if (tankInNeed >= Math.max(healerInNeed, dpsInNeed, 1) && signups.tank.includes(id)) {
-      console.log('Player placed as tank starter');
       starters.all.push(id);
       starters.tank.push(id);
       return;
     }
 
     if (healerInNeed >= Math.max(tankInNeed, dpsInNeed, 1) && signups.healer.includes(id)) {
-      console.log('Player placed as healer starter');
       starters.all.push(id);
       starters.healer.push(id);
       return;
     }
 
     if (dpsInNeed >= Math.max(tankInNeed, healerInNeed, 1) && signups.dps.includes(id)) {
-      console.log('Player placed as DPS starter');
       starters.all.push(id);
       starters.dps.push(id);
       return;
@@ -80,21 +77,18 @@ const chooseStarters = ({
     const dpsOpenings = dpsMax - starters.dps.length;
 
     if (tankOpenings >= Math.max(healerOpenings, dpsOpenings, 1) && signups.tank.includes(id)) {
-      console.log('Player placed as tank starter');
       starters.all.push(id);
       starters.tank.push(id);
       return;
     }
 
     if (healerOpenings >= Math.max(tankOpenings, dpsOpenings, 1) && signups.healer.includes(id)) {
-      console.log('Player placed as healer starter');
       starters.all.push(id);
       starters.healer.push(id);
       return;
     }
 
     if (dpsOpenings >= Math.max(tankOpenings, healerOpenings, 1) && signups.dps.includes(id)) {
-      console.log('Player placed as DPS starter');
       starters.all.push(id);
       starters.dps.push(id);
       return;
@@ -103,28 +97,24 @@ const chooseStarters = ({
     // Place in first available opening
 
     if (tankOpenings > 0 && signups.tank.includes(id)) {
-      console.log('Player placed as tank starter');
       starters.all.push(id);
       starters.tank.push(id);
       return;
     }
 
     if (healerOpenings > 0 && signups.healer.includes(id)) {
-      console.log('Player placed as healer starter');
       starters.all.push(id);
       starters.healer.push(id);
       return;
     }
 
     if (dpsOpenings > 0 && signups.dps.includes(id)) {
-      console.log('Player placed as DPS starter');
       starters.all.push(id);
       starters.dps.push(id);
       return;
     }
 
     // No openings
-    console.log('Player placed as backup');
     backups.all.push(id);
   });
 
@@ -143,6 +133,9 @@ const chooseStarters = ({
   let healerFieldValue = '';
   let dpsFieldValue = '';
   let backupFieldValue = '';
+
+  // TO DO: Make these loops use same variables, reset them for next loop
+  // This sucks to debug.
 
   starters.tank.forEach((id) => {
     // Each of these sections does roughly the same things
@@ -164,6 +157,15 @@ const chooseStarters = ({
     }
   });
 
+  let openSlots; // I hate doing this
+
+  // Show any open slots with "OPEN" text
+  openSlots = tankMax - starters.tank.length;
+  while (openSlots > 0) {
+    tankFieldValue = tankFieldValue.concat('OPEN\n');
+    openSlots -= 1;
+  }
+
   if (tankFieldValue) { // Prevents crash if the field is empty
     signupEmbed.addField('Tanks', tankFieldValue);
   }
@@ -181,6 +183,12 @@ const chooseStarters = ({
       healerFieldValue = healerFieldValue.concat('\n');
     }
   });
+
+  openSlots = healerMax - starters.healer.length;
+  while (openSlots > 0) {
+    healerFieldValue = healerFieldValue.concat('OPEN\n');
+    openSlots -= 1;
+  }
 
   if (healerFieldValue) {
     signupEmbed.addField('Healers', healerFieldValue);
@@ -200,6 +208,13 @@ const chooseStarters = ({
     }
   });
 
+  // Show any open slots with "OPEN" text
+  openSlots = dpsMax - starters.dps.length;
+  while (openSlots > 0) {
+    dpsFieldValue = dpsFieldValue.concat('OPEN\n');
+    openSlots -= 1;
+  }
+
   if (dpsFieldValue) {
     signupEmbed.addField('DPS', dpsFieldValue);
   }
@@ -209,7 +224,7 @@ const chooseStarters = ({
     const displayName = reaction.emoji.guild.members.cache.get(id).displayName;
     backupFieldValue = backupFieldValue.concat(displayName);
     if (backups.all.indexOf(id) < backups.all.length - 1) {
-      // Since backup list might be long, comma + space separated seems better
+      // Comma + space separated seems better because this field can be pretty long
       backupFieldValue = backupFieldValue.concat(', ');
     }
   });
@@ -240,6 +255,7 @@ client.on('message', (message) => {
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
+  // Full party as default
   let tankMax = 2;
   let healerMax = 2;
   let dpsMax = 4;
@@ -261,10 +277,6 @@ client.on('message', (message) => {
       tankMax = args[1];
       healerMax = args[2];
       dpsMax = args[3];
-    } else {
-      tankMax = 2;
-      healerMax = 2;
-      dpsMax = 4;
     }
 
     // Set up signup arrays
@@ -283,35 +295,15 @@ client.on('message', (message) => {
 
     const signupEmbed = new Discord.MessageEmbed()
       .setTitle('Signup')
-      // .setTitle(`Signup {whm} :whm: ${reactionEmoji.whm}`)
       .setTimestamp();
 
     message.channel.send(signupEmbed)
       .then((embedMessage) => {
-        // console.log(JSON.stringify(embedMessage));
         const filter = (reaction, user) => jobEmojis.includes(reaction.emoji) && !user.bot;
         const collector = embedMessage.createReactionCollector(filter, { dispose: true });
         jobEmojis.forEach(async (emoji) => {
           await embedMessage.react(emoji);
         });
-
-        // await embedMessage.react(pldEmoji);
-        // await embedMessage.react(warEmoji);
-        // await embedMessage.react(drkEmoji);
-        // await embedMessage.react(gnbEmoji);
-        // await embedMessage.react(whmEmoji);
-        // await embedMessage.react(schEmoji);
-        // await embedMessage.react(astEmoji);
-        // await embedMessage.react(mnkEmoji);
-        // await embedMessage.react(drgEmoji);
-        // await embedMessage.react(ninEmoji);
-        // await embedMessage.react(samEmoji);
-        // await embedMessage.react(brdEmoji);
-        // await embedMessage.react(mchEmoji);
-        // await embedMessage.react(dncEmoji);
-        // await embedMessage.react(blmEmoji);
-        // await embedMessage.react(smnEmoji);
-        // await embedMessage.react(rdmEmoji);
 
         collector.on('collect', (reaction, user) => {
         // Reset starter lists
@@ -321,23 +313,17 @@ client.on('message', (message) => {
           // See if user is already in list of signups
           if (!signups.all.includes(user.id)) {
             signups.all.push(user.id);
-            console.log(`Added ${user.username} to signup list`);
-            console.log(`Current list of signups: ${JSON.stringify(signups.all)}`);
           }
 
           signups[job].push(user.id);
-          console.log(`Current list of ${job.toUpperCase()} signups: ${JSON.stringify(signups[job])}`);
 
           // Add user to role lists
           if (tankJobs.includes(job) && !signups.tank.includes(user.id)) {
             signups.tank.push(user.id);
-            console.log(`Current list of tank signups: ${JSON.stringify(signups.tank)}`);
           } else if (healerJobs.includes(job) && !signups.healer.includes(user.id)) {
             signups.healer.push(user.id);
-            console.log(`Current list of healer signups: ${JSON.stringify(signups.healer)}`);
           } else if (dpsJobs.includes(job) && !signups.dps.includes(user.id)) {
             signups.dps.push(user.id);
-            console.log(`Current list of DPS signups: ${JSON.stringify(signups.dps)}`);
           }
 
           chooseStarters({
@@ -353,24 +339,19 @@ client.on('message', (message) => {
         });
 
         collector.on('remove', (reaction, user) => {
-        // Reset starter lists
-
           const job = reaction.emoji.name;
           signups[job] = signups[job].filter((item) => item !== user.id);
-          console.log(`Current list of ${job.toUpperCase()} signups: ${JSON.stringify(signups[job])}`);
 
           if (tankJobs.includes(job)
           && !signups.pld.includes(user.id) && !signups.war.includes(user.id)
           && !signups.drk.includes(user.id) && !signups.gnb.includes(user.id)) {
             signups.tank = signups.tank.filter((item) => item !== user.id);
-            console.log(`Current list of tank signups: ${JSON.stringify(signups.tank)}`);
           }
 
           if (healerJobs.includes(job)
           && !signups.whm.includes(user.id) && !signups.sch.includes(user.id)
           && !signups.ast.includes(user.id)) {
             signups.healer = signups.healer.filter((item) => item !== user.id);
-            console.log(`Current list of healer signups: ${JSON.stringify(signups.healer)}`);
           }
 
           if (dpsJobs.includes(job)
@@ -381,13 +362,11 @@ client.on('message', (message) => {
           && !signups.blm.includes(user.id) && !signups.smn.includes(user.id)
           && !signups.rdm.includes(user.id)) {
             signups.dps = signups.dps.filter((item) => item !== user.id);
-            console.log(`Current list of DPS signups: ${JSON.stringify(signups.dps)}`);
           }
 
           if (!signups.tank.includes(user.id) && !signups.healer.includes(user.id)
           && !signups.dps.includes(user.id)) {
             signups.all = signups.all.filter((item) => item !== user.id);
-            console.log(`Current list of signups: ${JSON.stringify(signups.all)}`);
           }
 
           chooseStarters({
