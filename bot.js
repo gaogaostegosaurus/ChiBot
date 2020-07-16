@@ -158,7 +158,7 @@ const chooseStarters = ({
     tankFieldValue = tankFieldValue.concat(displayName);
 
     if (starters.tank.indexOf(id) < starters.tank.length - 1) {
-      tankFieldValue = tankFieldValue.concat('/n');
+      tankFieldValue = tankFieldValue.concat('\n');
     }
   });
 
@@ -179,8 +179,8 @@ const chooseStarters = ({
 
     healerFieldValue = healerFieldValue.concat(displayName);
 
-    if (starters.tank.indexOf(id) < starters.tank.length - 1) {
-      healerFieldValue = healerFieldValue.concat('/n');
+    if (starters.healer.indexOf(id) < starters.healer.length - 1) {
+      healerFieldValue = healerFieldValue.concat('\n');
     }
   });
 
@@ -201,8 +201,8 @@ const chooseStarters = ({
 
     dpsFieldValue = dpsFieldValue.concat(displayName);
 
-    if (starters.tank.indexOf(id) < starters.tank.length - 1) {
-      dpsFieldValue = dpsFieldValue.concat('/n');
+    if (starters.dps.indexOf(id) < starters.dps.length - 1) {
+      dpsFieldValue = dpsFieldValue.concat('\n');
     }
   });
 
@@ -223,8 +223,8 @@ const chooseStarters = ({
 
     backupFieldValue = backupFieldValue.concat(displayName);
 
-    if (starters.tank.indexOf(id) < starters.tank.length - 1) {
-      backupFieldValue = backupFieldValue.concat('/n');
+    if (backups.all.indexOf(id) < backups.all.length - 1) {
+      backupFieldValue = backupFieldValue.concat('\n');
     }
   });
 
