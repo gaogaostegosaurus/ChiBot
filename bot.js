@@ -207,7 +207,7 @@ const chooseStarters = ({
   });
 
   if (dpsFieldValue) {
-    signupEmbed.addField('Healers', dpsFieldValue);
+    signupEmbed.addField('DPS', dpsFieldValue);
   }
 
   backups.all.forEach((id) => {
@@ -229,7 +229,7 @@ const chooseStarters = ({
   });
 
   if (backupFieldValue) {
-    signupEmbed.addField('Healers', backupFieldValue);
+    signupEmbed.addField('Backups', backupFieldValue);
   }
 
   embedMessage.edit(signupEmbed);
