@@ -5,6 +5,15 @@
 // Bot requires delete permission (will complain but work otherwise)
 // Likely best to give only bot permission to add reactions
 
+// LOOK AT THESE FUCKING GLOBALS
+// MAN, ARE YOU IN THE MOOD FOR SOME FUCKING SPAGHETTI CODE TOO?
+
+// Define jobs
+const tankJobs = ['pld', 'war', 'drk', 'gnb'];
+const healerJobs = ['whm', 'sch', 'ast'];
+const dpsJobs = ['mnk', 'drg', 'nin', 'sam', 'brd', 'mch', 'dnc', 'blm', 'smn', 'rdm'];
+const allJobs = tankJobs.concat(healerJobs, dpsJobs);
+
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 
@@ -13,14 +22,18 @@ const client = new Discord.Client();
 const chooseStarters = ({
   reaction,
   signups,
-  starters,
-  backups,
+  tankMax,
+  healerMax,
+  dpsMax,
   signupEmbed,
   embedMessage,
 } = {}) => {
   // This function when called deletes and re-generates the data showing who is in what role
 
   // Delete all data first
+  const starters = {};
+  const backups = {};
+
   starters.all = [];
   starters.tank = [];
   starters.healer = [];
@@ -31,9 +44,9 @@ const chooseStarters = ({
   // Loop through entire signup array to decide who goes where
   signups.all.forEach((id) => {
     // Calculate which role has the greatest current need
-    const tankInNeed = starters.tankMax - signups.tank.length;
-    const healerInNeed = starters.healerMax - signups.healer.length;
-    const dpsInNeed = starters.dpsMax - signups.dps.length;
+    const tankInNeed = tankMax - signups.tank.length;
+    const healerInNeed = healerMax - signups.healer.length;
+    const dpsInNeed = dpsMax - signups.dps.length;
     console.log(`In need numbers: Tank=${tankInNeed} Healer=${healerInNeed} DPS=${dpsInNeed}`);
 
     // Attempt to place player in roles that have not enough or just enough signups
@@ -61,9 +74,9 @@ const chooseStarters = ({
 
     // Place player in the role with largest current number of open starter positions
 
-    const tankOpenings = starters.tankMax - starters.tank.length;
-    const healerOpenings = starters.healerMax - starters.healer.length;
-    const dpsOpenings = starters.dpsMax - starters.dps.length;
+    const tankOpenings = tankMax - starters.tank.length;
+    const healerOpenings = healerMax - starters.healer.length;
+    const dpsOpenings = dpsMax - starters.dps.length;
 
     if (tankOpenings >= Math.max(healerOpenings, dpsOpenings, 1) && signups.tank.includes(id)) {
       console.log('Player placed as tank starter');
@@ -124,9 +137,21 @@ const chooseStarters = ({
   console.log(`DPS starters ${JSON.stringify(starters.dps)}`);
 
   // Regenerate embed
+  signupEmbed.fields = [];
+  const tankFieldValue = '';
+  const healerFieldValue = '';
+  const dpsFieldValue = '';
 
   starters.tank.forEach((id) => {
     signupEmbed.addField('Tank', reaction.emoji.guild.members.cache.get(id).displayName);
+
+    // let displayName = reaction.emoji.guild.members.cache.get(id).displayName;
+    // tankJobs.forEach((job) => {
+    //   if (signups[job].includes(id)) {
+    //     displayName = displayName.concat(`{${job}}`);
+    //   }
+    // });
+    // tankFieldValue = tankFieldValue.concat(displayName);
   });
 
   starters.healer.forEach((id) => {
@@ -152,94 +177,60 @@ client.on('message', (message) => {
   // Stop early if message isn't for bot
   if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-  // Define jobs
-  const tankJobs = ['pld', 'war', 'drk', 'gnb'];
-  const healerJobs = ['whm', 'sch', 'ast'];
-  const dpsJobs = ['mnk', 'drg', 'nin', 'sam', 'brd', 'mch', 'dnc', 'blm', 'smn', 'rdm'];
-  const allJobs = tankJobs.concat(healerJobs, dpsJobs);
-
   // Define job emojis
   const reactionEmoji = {};
-
   const jobEmojis = [];
   allJobs.forEach((job) => {
     reactionEmoji[job] = message.guild.emojis.cache.find((emoji) => emoji.name === job);
     jobEmojis.push(reactionEmoji[job]);
   });
 
-  // const pldEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'pld');
-  // const warEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'war');
-  // const drkEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'drk');
-  // const gnbEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'gnb');
-  // const whmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'whm');
-  // const schEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'sch');
-  // const astEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'ast');
-  // const mnkEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'mnk');
-  // const drgEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'drg');
-  // const ninEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'nin');
-  // const samEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'sam');
-  // const brdEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'brd');
-  // const mchEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'mch');
-  // const dncEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'dnc');
-  // const blmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'blm');
-  // const smnEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'smn');
-  // const rdmEmoji = message.guild.emojis.cache.find((emoji) => emoji.name === 'rdm');
-  // const nojobEmoji = message.guild.emojis.cache.find(emoji => emoji.name === 'nojob');
-
-  // const jobEmojis = [
-  //   pldEmoji, warEmoji, drkEmoji, gnbEmoji,
-  //   whmEmoji, schEmoji, astEmoji,
-  //   mnkEmoji, drgEmoji, ninEmoji, samEmoji,
-  //   brdEmoji, mchEmoji, dncEmoji,
-  //   blmEmoji, smnEmoji, rdmEmoji,
-  // ];
-
-  const signups = {};
-  signups.tank = [];
-  signups.healer = [];
-  signups.dps = [];
-  signups.all = [];
-
-  allJobs.forEach((job) => {
-    signups[job] = [];
-  });
-
-  const starters = {};
-
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
+  let tankMax = 2;
+  let healerMax = 2;
+  let dpsMax = 4;
+
   if (command === 'test') {
-    const backups = {};
-    backups.all = [];
     if (args[0] === 'light') {
-      starters.tankMax = 1;
-      starters.healerMax = 1;
-      starters.dpsMax = 2;
+      tankMax = 1;
+      healerMax = 1;
+      dpsMax = 2;
     } else if (args[0] === 'full') {
-      starters.tankMax = 2;
-      starters.healerMax = 2;
-      starters.dpsMax = 4;
+      tankMax = 2;
+      healerMax = 2;
+      dpsMax = 4;
     } else if (args[0] === 'alliance') {
-      starters.tankMax = 3;
-      starters.healerMax = 6;
-      starters.dpsMax = 15;
+      tankMax = 3;
+      healerMax = 6;
+      dpsMax = 15;
     } else if (args[0] === 'custom') {
-      starters.tankMax = args[1];
-      starters.healerMax = args[2];
-      starters.dpsMax = args[3];
+      tankMax = args[1];
+      healerMax = args[2];
+      dpsMax = args[3];
     } else {
-      starters.tankMax = 2;
-      starters.healerMax = 2;
-      starters.dpsMax = 4;
+      tankMax = 2;
+      healerMax = 2;
+      dpsMax = 4;
     }
 
-    message.delete({ timeout: 1000, reason: 'Commands are ugly' }) // Wait 1 second before deleting message
+    // Set up signup arrays
+    const signups = {};
+    signups.tank = [];
+    signups.healer = [];
+    signups.dps = [];
+    signups.all = [];
+    allJobs.forEach((job) => {
+      signups[job] = [];
+    });
+
+    message.delete({ timeout: 5000, reason: 'Cleanup command phrase' }) // Waits 5 seconds before deleting message
       .then((msg) => console.log(`Received and removed command ${prefix}${command} from ${msg.author.username}`))
       .catch(console.error);
 
     const signupEmbed = new Discord.MessageEmbed()
-      .setTitle('Signup')
+      .setTitle('Signup {whm} :whm:')
       .setTimestamp();
 
     message.channel.send(signupEmbed)
@@ -271,11 +262,6 @@ client.on('message', (message) => {
 
         collector.on('collect', (reaction, user) => {
         // Reset starter lists
-          starters.tank = [];
-          starters.healer = [];
-          starters.dps = [];
-          starters.all = [];
-          signupEmbed.fields = [];
 
           const job = reaction.emoji.name;
 
@@ -302,17 +288,18 @@ client.on('message', (message) => {
           }
 
           chooseStarters({
-            reaction, signups, starters, backups, signupEmbed, embedMessage,
+            reaction,
+            signups,
+            tankMax,
+            healerMax,
+            dpsMax,
+            signupEmbed,
+            embedMessage,
           });
         });
 
         collector.on('remove', (reaction, user) => {
         // Reset starter lists
-          starters.tank = [];
-          starters.healer = [];
-          starters.dps = [];
-          starters.all = [];
-          signupEmbed.fields = [];
 
           const job = reaction.emoji.name;
           signups[job] = signups[job].filter((item) => item !== user.id);
@@ -350,7 +337,13 @@ client.on('message', (message) => {
           }
 
           chooseStarters({
-            reaction, signups, starters, backups, signupEmbed, embedMessage,
+            reaction,
+            signups,
+            tankMax,
+            healerMax,
+            dpsMax,
+            signupEmbed,
+            embedMessage,
           });
         });
       }).catch(console.error);
