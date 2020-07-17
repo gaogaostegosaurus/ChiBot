@@ -13,6 +13,7 @@ const tankJobs = ['pld', 'war', 'drk', 'gnb'];
 const healerJobs = ['whm', 'sch', 'ast'];
 const dpsJobs = ['mnk', 'drg', 'nin', 'sam', 'brd', 'mch', 'dnc', 'blm', 'smn', 'rdm'];
 const allJobs = tankJobs.concat(healerJobs, dpsJobs);
+const backupRoles = ['backup_tank', 'backup_healer', 'backup_dps'];
 
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
@@ -152,7 +153,7 @@ const chooseStarters = ({
     tankFieldValue = tankFieldValue.concat(displayName);
 
     // Add a line break if not final ID
-    if (starters.tank.indexOf(id) < starters.tank.length - 1) {
+    if (starters.tank.indexOf(id) < tankMax - 1) {
       tankFieldValue = tankFieldValue.concat('\n');
     }
   });
@@ -167,7 +168,7 @@ const chooseStarters = ({
   }
 
   if (tankFieldValue) { // Prevents crash if the field is empty
-    signupEmbed.addField('Tanks', tankFieldValue);
+    signupEmbed.addField('Tanks', tankFieldValue, true);
   }
 
   starters.healer.forEach((id) => {
@@ -179,7 +180,7 @@ const chooseStarters = ({
     });
     const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
     healerFieldValue = healerFieldValue.concat(displayName);
-    if (starters.healer.indexOf(id) < starters.healer.length - 1) {
+    if (starters.healer.indexOf(id) < healerMax - 1) {
       healerFieldValue = healerFieldValue.concat('\n');
     }
   });
@@ -191,7 +192,7 @@ const chooseStarters = ({
   }
 
   if (healerFieldValue) {
-    signupEmbed.addField('Healers', healerFieldValue);
+    signupEmbed.addField('Healers', healerFieldValue, true);
   }
 
   starters.dps.forEach((id) => {
@@ -203,7 +204,7 @@ const chooseStarters = ({
     });
     const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
     dpsFieldValue = dpsFieldValue.concat(displayName);
-    if (starters.dps.indexOf(id) < starters.dps.length - 1) {
+    if (starters.dps.indexOf(id) < dpsMax - 1) {
       dpsFieldValue = dpsFieldValue.concat('\n');
     }
   });
@@ -216,7 +217,7 @@ const chooseStarters = ({
   }
 
   if (dpsFieldValue) {
-    signupEmbed.addField('DPS', dpsFieldValue);
+    signupEmbed.addField('DPS', dpsFieldValue, true);
   }
 
   backups.all.forEach((id) => {
