@@ -20,6 +20,8 @@ const { prefix, token } = require('./config.json');
 
 const client = new Discord.Client();
 
+const embedDelay = 2000; // How many ms to wait before changing embed (prevent rate limiting?)
+
 client.once('ready', () => {
   console.log('Bot ready. It\'s alive. IT\'S ALIVE!!');
 });
@@ -251,12 +253,10 @@ client.on('message', (message) => {
           // Only using reaction properties to find IDs, not the reaction itself (I think)
         } = {}) => {
           // Reset all starter/backup data so that roles can be re-assigned
-
           starter.all = [];
           starter.tank = [];
           starter.healer = [];
           starter.dps = [];
-
           backup.all = [];
 
           // Loop through entire signup array to decide who goes where
@@ -390,7 +390,7 @@ client.on('message', (message) => {
 
           // Backup roles specifically not handled here
           clearTimeout(collectionTimeout);
-          collectionTimeout = setTimeout(chooseStarters, 3000, { reaction });
+          collectionTimeout = setTimeout(chooseStarters, embedDelay, { reaction });
         });
 
         collector.on('remove', (reaction, user) => {
@@ -425,7 +425,7 @@ client.on('message', (message) => {
           }
 
           clearTimeout(collectionTimeout);
-          collectionTimeout = setTimeout(chooseStarters, 3000, { reaction });
+          collectionTimeout = setTimeout(chooseStarters, embedDelay, { reaction });
         });
       }).catch(console.error);
   }
