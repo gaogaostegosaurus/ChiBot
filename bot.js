@@ -139,6 +139,114 @@ client.on('message', (message) => {
           await embedMessage.react(emoji);
         });
 
+        const getRoleStarterFieldValue = ({ // Function to build starter lists
+          reaction,
+          starterArray,
+        } = {}) => {
+          let starterFieldValue = '';
+
+          // Set role jobs
+          let jobList = tankJobs;
+          let roleMax = tankMax;
+          if (starterArray === starter.tank) {
+            jobList = tankJobs;
+            roleMax = tankMax;
+          } else if (starterArray === starter.healer) {
+            jobList = healerJobs;
+            roleMax = healerMax;
+          } else if (starterArray === starter.dps) {
+            jobList = dpsJobs;
+            roleMax = dpsMax;
+          }
+
+          starterArray.forEach((id) => {
+            // Create string of icons for this ID
+            let jobIcons = '';
+            jobList.forEach((job) => {
+              if (signup[job].includes(id)) {
+                jobIcons = jobIcons.concat(reactionEmoji[job]);
+              }
+            });
+
+            // Set displayName to job icons + Discord nickname and add it to field value
+            const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
+            starterFieldValue = starterFieldValue.concat(displayName);
+
+            // Add a line break if not final ID
+            if (starterArray.indexOf(id) + 1 < roleMax) {
+              starterFieldValue = starterFieldValue.concat('\n');
+            }
+          });
+
+          // Fill any remaining slots with open string
+          for (let i = starterArray.length + 1; i <= roleMax; i += 1) {
+            starterFieldValue = starterFieldValue.concat(`${openString}`);
+            if (i < roleMax) {
+              starterFieldValue = starterFieldValue.concat('\n');
+            }
+          }
+
+          return starterFieldValue;
+        };
+
+        const getBackupFieldValue = ({
+          reaction,
+        } = {}) => {
+          let backupFieldValue = '';
+
+          backup.all.forEach((id) => {
+            // Add role icons
+            let backupIcons = '';
+
+            // Check what backup role icons to put next to each person
+            if (signup.backup_tank.includes(id)) {
+              backupIcons = backupIcons.concat(reactionEmoji.backup_tank);
+            } else {
+              for (let i = 0; i < tankJobs.length; i += 1) {
+                if (signup[tankJobs[i]].includes(id)) {
+                  backupIcons = backupIcons.concat(reactionEmoji.backup_tank);
+                  break;
+                }
+              }
+            }
+
+            if (signup.backup_healer.includes(id)) {
+              backupIcons = backupIcons.concat(reactionEmoji.backup_healer);
+            } else {
+              for (let i = 0; i < healerJobs.length; i += 1) {
+                if (signup[healerJobs[i]].includes(id)) {
+                  backupIcons = backupIcons.concat(reactionEmoji.backup_healer);
+                  break;
+                }
+              }
+            }
+
+            if (signup.backup_dps.includes(id)) {
+              backupIcons = backupIcons.concat(reactionEmoji.backup_dps);
+            } else {
+              for (let i = 0; i < dpsJobs.length; i += 1) {
+                if (signup[dpsJobs[i]].includes(id)) {
+                  backupIcons = backupIcons.concat(reactionEmoji.backup_dps);
+                  break;
+                }
+              }
+            }
+
+            const displayName = backupIcons.concat(
+              reaction.emoji.guild.members.cache.get(id).displayName,
+            );
+
+            backupFieldValue = backupFieldValue.concat(displayName);
+            if (backup.all.indexOf(id) + 1 < backup.all.length) {
+              // Comma + space separated seems better than \n because this field can be pretty long
+              backupFieldValue = backupFieldValue.concat(', ');
+            }
+          });
+
+          return backupFieldValue;
+        };
+
+        
         const chooseStarters = ({ // Function for (re)building starter lists
           reaction,
         } = {}) => {
@@ -248,114 +356,19 @@ client.on('message', (message) => {
           console.log(`Healer starters ${JSON.stringify(starter.healer)}`);
           console.log(`DPS starters ${JSON.stringify(starter.dps)}`);
           console.log(`Backups ${JSON.stringify(backup.all)}`);
-        };
 
-        const getRoleStarterFieldValue = ({ // Function to build starter lists
-          reaction,
-          starterArray,
-        } = {}) => {
-          let starterFieldValue = '';
+          signupEmbed.fields = [];
 
-          // Set role jobs
-          let jobList = tankJobs;
-          let roleMax = tankMax;
-          if (starterArray === starter.tank) {
-            jobList = tankJobs;
-            roleMax = tankMax;
-          } else if (starterArray === starter.healer) {
-            jobList = healerJobs;
-            roleMax = healerMax;
-          } else if (starterArray === starter.dps) {
-            jobList = dpsJobs;
-            roleMax = dpsMax;
+          signupEmbed.addField('Tank', getRoleStarterFieldValue({ reaction, starterArray: starter.tank }), true);
+          signupEmbed.addField('Healer', getRoleStarterFieldValue({ reaction, starterArray: starter.healer }), true);
+          signupEmbed.addField('DPS', getRoleStarterFieldValue({ reaction, starterArray: starter.dps }), true);
+          if (getBackupFieldValue({ reaction })) {
+            signupEmbed.addField('Backups', getBackupFieldValue({ reaction }));
           }
-
-          starterArray.forEach((id) => {
-            // Create string of icons for this ID
-            let jobIcons = '';
-            jobList.forEach((job) => {
-              if (signup[job].includes(id)) {
-                jobIcons = jobIcons.concat(reactionEmoji[job]);
-              }
-            });
-
-            // Set displayName to job icons + Discord nickname and add it to field value
-            const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
-            starterFieldValue = starterFieldValue.concat(displayName);
-
-            // Add a line break if not final ID
-            if (starterArray.indexOf(id) + 1 < roleMax) {
-              starterFieldValue = starterFieldValue.concat('\n');
-            }
-          });
-
-          // Fill any remaining slots with open string
-          for (let i = starterArray.length + 1; i <= roleMax; i += 1) {
-            starterFieldValue = starterFieldValue.concat(`${openString}`);
-            if (i < roleMax) {
-              starterFieldValue = starterFieldValue.concat('\n');
-            }
-          }
-
-          return starterFieldValue;
+          embedMessage.edit(signupEmbed);
         };
 
-        const getBackupFieldValue = ({
-          reaction,
-        } = {}) => {
-          let backupFieldValue = '';
-
-          backup.all.forEach((id) => {
-            // Add role icons
-            let backupIcons = '';
-
-            // Check what backup role icons to put next to each person
-            if (signup.backup_tank.includes(id)) {
-              backupIcons = backupIcons.concat(reactionEmoji.backup_tank);
-            } else {
-              for (let i = 0; i < tankJobs.length; i += 1) {
-                if (signup[tankJobs[i]].includes(id)) {
-                  backupIcons = backupIcons.concat(reactionEmoji.backup_tank);
-                  break;
-                }
-              }
-            }
-
-            if (signup.backup_healer.includes(id)) {
-              backupIcons = backupIcons.concat(reactionEmoji.backup_healer);
-            } else {
-              for (let i = 0; i < healerJobs.length; i += 1) {
-                if (signup[healerJobs[i]].includes(id)) {
-                  backupIcons = backupIcons.concat(reactionEmoji.backup_healer);
-                  break;
-                }
-              }
-            }
-
-            if (signup.backup_dps.includes(id)) {
-              backupIcons = backupIcons.concat(reactionEmoji.backup_dps);
-            } else {
-              for (let i = 0; i < dpsJobs.length; i += 1) {
-                if (signup[dpsJobs[i]].includes(id)) {
-                  backupIcons = backupIcons.concat(reactionEmoji.backup_dps);
-                  break;
-                }
-              }
-            }
-
-            const displayName = backupIcons.concat(
-              reaction.emoji.guild.members.cache.get(id).displayName,
-            );
-
-            backupFieldValue = backupFieldValue.concat(displayName);
-            if (backup.all.indexOf(id) + 1 < backup.all.length) {
-              // Comma + space separated seems better than \n because this field can be pretty long
-              backupFieldValue = backupFieldValue.concat(', ');
-            }
-          });
-
-          return backupFieldValue;
-        };
+        let collectionTimeout;
 
         collector.on('collect', (reaction, user) => { // Someone reacts to the embed
           const reactionJob = reaction.emoji.name; // Job they reacted as
@@ -376,19 +389,8 @@ client.on('message', (message) => {
           }
 
           // Backup roles specifically not handled here
-
-          chooseStarters({ reaction });
-
-          signupEmbed.fields = [];
-
-          signupEmbed.addField('Tank', getRoleStarterFieldValue({ reaction, starterArray: starter.tank }), true);
-          signupEmbed.addField('Healer', getRoleStarterFieldValue({ reaction, starterArray: starter.healer }), true);
-          signupEmbed.addField('DPS', getRoleStarterFieldValue({ reaction, starterArray: starter.dps }), true);
-          if (getBackupFieldValue({ reaction })) {
-            signupEmbed.addField('Backups', getBackupFieldValue({ reaction }));
-          }
-
-          embedMessage.edit(signupEmbed);
+          clearTimeout(collectionTimeout);
+          collectionTimeout = setTimeout(chooseStarters, 3000, { reaction });
         });
 
         collector.on('remove', (reaction, user) => {
@@ -422,18 +424,10 @@ client.on('message', (message) => {
             signup.all = signup.all.filter((item) => item !== user.id);
           }
 
-          chooseStarters({ reaction });
+          clearTimeout(collectionTimeout);
+          collectionTimeout = setTimeout(chooseStarters, 3000, { reaction });
 
-          signupEmbed.fields = [];
-
-          signupEmbed.addField('Tank', getRoleStarterFieldValue({ reaction, starterArray: starter.tank }), true);
-          signupEmbed.addField('Healer', getRoleStarterFieldValue({ reaction, starterArray: starter.healer }), true);
-          signupEmbed.addField('DPS', getRoleStarterFieldValue({ reaction, starterArray: starter.dps }), true);
-          if (getBackupFieldValue({ reaction })) {
-            signupEmbed.addField('Backups', getBackupFieldValue({ reaction }));
-          }
-
-          embedMessage.edit(signupEmbed);
+          
         });
       }).catch(console.error);
   }
