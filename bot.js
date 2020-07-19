@@ -246,9 +246,9 @@ client.on('message', (message) => {
           return backupFieldValue;
         };
 
-        
         const chooseStarters = ({ // Function for (re)building starter lists
           reaction,
+          // Only using reaction properties to find IDs, not the reaction itself (I think)
         } = {}) => {
           // Reset all starter/backup data so that roles can be re-assigned
 
@@ -426,8 +426,6 @@ client.on('message', (message) => {
 
           clearTimeout(collectionTimeout);
           collectionTimeout = setTimeout(chooseStarters, 3000, { reaction });
-
-          
         });
       }).catch(console.error);
   }
