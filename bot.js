@@ -20,7 +20,7 @@ const { prefix, token } = require('./config.json');
 
 const client = new Discord.Client();
 
-const embedDelay = 2000; // How many ms to wait before changing embed (prevent rate limiting?)
+const embedDelay = 1000; // How many ms to wait before changing embed (prevent rate limiting?)
 
 client.once('ready', () => {
   console.log('Bot ready. It\'s alive. IT\'S ALIVE!!');
@@ -47,31 +47,31 @@ client.on('message', (message) => {
   const command = args.shift().toLowerCase();
 
   // Full party as default
-  let tankMax = 2;
-  let healerMax = 2;
-  let dpsMax = 4;
+  let tankCap = 2;
+  let healerCap = 2;
+  let dpsCap = 4;
   let embedTitle = 'Signup List (Full Party)';
 
   if (command === 'signup') {
     if (args[0] === 'light') {
-      tankMax = 1;
-      healerMax = 1;
-      dpsMax = 2;
+      tankCap = 1;
+      healerCap = 1;
+      dpsCap = 2;
       embedTitle = 'Signup List (Light Party)';
     } else if (args[0] === 'full') {
-      tankMax = 2;
-      healerMax = 2;
-      dpsMax = 4;
+      tankCap = 2;
+      healerCap = 2;
+      dpsCap = 4;
       embedTitle = 'Signup List (Full Party)';
     } else if (args[0] === 'alliance') {
-      tankMax = 3;
-      healerMax = 6;
-      dpsMax = 15;
+      tankCap = 3;
+      healerCap = 6;
+      dpsCap = 15;
       embedTitle = 'Signup List (Alliance Raid)';
     // } else if (args[0] === 'custom') {
-    //   tankMax = args[1];
-    //   healerMax = args[2];
-    //   dpsMax = args[3];
+    //   tankCap = args[1];
+    //   healerCap = args[2];
+    //   dpsCap = args[3];
     }
 
     // Set up signup object and arrays
@@ -105,27 +105,27 @@ client.on('message', (message) => {
     const openString = '<OPEN>'; // Set string to designate open slots here
 
     let fieldValue = '';
-    for (let i = 1; i <= tankMax; i += 1) {
+    for (let i = 1; i <= tankCap; i += 1) {
       fieldValue = fieldValue.concat(openString);
-      if (i < tankMax) {
+      if (i < tankCap) {
         fieldValue = fieldValue.concat('\n'); // Add carriage return for next line
       }
     }
     signupEmbed.addField('Tank', fieldValue, true);
 
     fieldValue = '';
-    for (let i = 1; i <= healerMax; i += 1) {
+    for (let i = 1; i <= healerCap; i += 1) {
       fieldValue = fieldValue.concat(openString);
-      if (i < healerMax) {
+      if (i < healerCap) {
         fieldValue = fieldValue.concat('\n'); // Add carriage return for next line
       }
     }
     signupEmbed.addField('Healer', fieldValue, true);
 
     fieldValue = '';
-    for (let i = 1; i <= dpsMax; i += 1) {
+    for (let i = 1; i <= dpsCap; i += 1) {
       fieldValue = fieldValue.concat(openString);
-      if (i < dpsMax) {
+      if (i < dpsCap) {
         fieldValue = fieldValue.concat('\n'); // Add carriage return for next line
       }
     }
@@ -144,22 +144,27 @@ client.on('message', (message) => {
         const getRoleStarterFieldValue = ({ // Function to build starter lists
           reaction,
           starterArray,
+          role,
         } = {}) => {
+          let jobList = tankJobs;
+          let roleCap = tankCap;
+
+          if (!role) {
+            return '';
+          } if (role === 'Tank') {
+            jobList = tankJobs;
+            roleCap = tankCap;
+          } else if (role === 'Healer') {
+            jobList = healerJobs;
+            roleCap = healerCap;
+          } else if (role === 'DPS') {
+            jobList = dpsJobs;
+            roleCap = dpsCap;
+          }
+
           let starterFieldValue = '';
 
           // Set role jobs
-          let jobList = tankJobs;
-          let roleMax = tankMax;
-          if (starterArray === starter.tank) {
-            jobList = tankJobs;
-            roleMax = tankMax;
-          } else if (starterArray === starter.healer) {
-            jobList = healerJobs;
-            roleMax = healerMax;
-          } else if (starterArray === starter.dps) {
-            jobList = dpsJobs;
-            roleMax = dpsMax;
-          }
 
           starterArray.forEach((id) => {
             // Create string of icons for this ID
@@ -175,15 +180,15 @@ client.on('message', (message) => {
             starterFieldValue = starterFieldValue.concat(displayName);
 
             // Add a line break if not final ID
-            if (starterArray.indexOf(id) + 1 < roleMax) {
+            if (starterArray.indexOf(id) + 1 < roleCap) {
               starterFieldValue = starterFieldValue.concat('\n');
             }
           });
 
           // Fill any remaining slots with open string
-          for (let i = starterArray.length + 1; i <= roleMax; i += 1) {
+          for (let i = starterArray.length + 1; i <= roleCap; i += 1) {
             starterFieldValue = starterFieldValue.concat(`${openString}`);
-            if (i < roleMax) {
+            if (i < roleCap) {
               starterFieldValue = starterFieldValue.concat('\n');
             }
           }
@@ -191,12 +196,20 @@ client.on('message', (message) => {
           return starterFieldValue;
         };
 
-        const getBackupFieldValue = ({
+        const addBackupFields = ({
           reaction,
+          backupArray,
         } = {}) => {
-          let backupFieldValue = '';
+          if (!backupArray) { return; }
 
-          backup.all.forEach((id) => {
+          let backupField1Value = '';
+          let backupField2Value = '';
+          let backupField3Value = '';
+
+          backupArray.forEach((id) => {
+            // Decide which field to assign to
+            const backupField = (backupArray.indexOf(id) % 3) + 1;
+
             // Add role icons
             let backupIcons = '';
 
@@ -234,18 +247,22 @@ client.on('message', (message) => {
               }
             }
 
-            const displayName = backupIcons.concat(
+            let displayName = backupIcons.concat(
               reaction.emoji.guild.members.cache.get(id).displayName,
             );
 
-            backupFieldValue = backupFieldValue.concat(displayName);
-            if (backup.all.indexOf(id) + 1 < backup.all.length) {
+            if (backup.all.indexOf(id) + 1 + 3 < backup.all.length) {
               // Comma + space separated seems better than \n because this field can be pretty long
-              backupFieldValue = backupFieldValue.concat(', ');
+              displayName = displayName.concat('\n');
             }
-          });
 
-          return backupFieldValue;
+            if (backupField === 1) { backupField1Value = backupField1Value.concat(displayName); }
+            if (backupField === 2) { backupField2Value = backupField2Value.concat(displayName); }
+            if (backupField === 3) { backupField3Value = backupField3Value.concat(displayName); }
+          });
+          if (backupField1Value) { signupEmbed.addField('Backups', backupField1Value, true); }
+          if (backupField2Value) { signupEmbed.addField('', backupField2Value, true); }
+          if (backupField3Value) { signupEmbed.addField('', backupField3Value, true); }
         };
 
         const chooseStarters = ({ // Function for (re)building starter lists
@@ -259,112 +276,170 @@ client.on('message', (message) => {
           starter.dps = [];
           backup.all = [];
 
-          // Loop through entire signup array to decide who goes where
-          // Not 100% sure about this algorithm but whatever
+          // Outline of algorithm process:
+          // Go through array to find at what index there are enough tank/healer/DPS/total members
+          // Create new array ending on that index
+          // With priority to time, place anyone who is single role
+          // Follow with double and triple role
+          // If someone wasn't placed, add them to backup
+          // Add all other signups to backup
+
+          // Step 1:
+          // Go through array to find at what index there are enough tank/healer/DPS/total members
+          // Create new array ending on that index
+
+          let tankCount = 0;
+          let healerCount = 0;
+          let dpsCount = 0;
+          let totalCount = 0;
+          const shortlist = [];
+
+          for (let i = 0; i < signup.all.length; i += 1) {
+            const id = signup.all[i];
+            shortlist.push(id); // Place ID into shortlist
+            if (signup.tank.includes(id)) {
+              tankCount += 1;
+            }
+            if (signup.healer.includes(id)) {
+              healerCount += 1;
+            }
+            if (signup.dps.includes(id)) {
+              dpsCount += 1;
+            }
+
+            totalCount += 1;
+
+            if (tankCount >= tankCap && healerCount >= healerCap && dpsCount >= dpsCap
+            && totalCount >= tankCap + healerCap + dpsCap) {
+              break; // Stop making array once sufficient IDs have been pushed
+            }
+
+            // Just runs through the whole array if signups are insufficient
+          }
+          console.log(`Shortlist: ${JSON.stringify(shortlist)}`);
+
+          // Step 2:
+          // With priority to time, place anyone who is single role
+          // Follow with double or triple flex
+
+          const tankTempArray = [];
+          const healerTempArray = [];
+          const dpsTempArray = [];
+
+          for (let i = 0; i < shortlist.length; i += 1) {
+            const id = shortlist[i];
+            let flex = 0;
+            if (signup.tank.includes(id)) { flex += 1; }
+            if (signup.healer.includes(id)) { flex += 1; }
+            if (signup.dps.includes(id)) { flex += 1; }
+
+            if (flex === 1) {
+              if (signup.tank.includes(id) && tankTempArray.length < tankCap) {
+                tankTempArray.push(id);
+              } else if (signup.healer.includes(id) && healerTempArray.length < healerCap) {
+                healerTempArray.push(id);
+              } else if (signup.dps.includes(id) && dpsTempArray.length < dpsCap) {
+                dpsTempArray.push(id);
+              }
+            }
+          }
+
+          for (let i = 0; i < shortlist.length; i += 1) {
+            const id = shortlist[i];
+            let flex = 0;
+            if (signup.tank.includes(id)) { flex += 1; }
+            if (signup.healer.includes(id)) { flex += 1; }
+            if (signup.dps.includes(id)) { flex += 1; }
+
+            if (flex === 2) {
+              if (signup.tank.includes(id) && tankTempArray.length < tankCap) {
+                tankTempArray.push(id);
+              } else if (signup.healer.includes(id) && healerTempArray.length < healerCap) {
+                healerTempArray.push(id);
+              } else if (signup.dps.includes(id) && dpsTempArray.length < dpsCap) {
+                dpsTempArray.push(id);
+              }
+            }
+          }
+
+          for (let i = 0; i < shortlist.length; i += 1) {
+            const id = shortlist[i];
+            let flex = 0;
+            if (signup.tank.includes(id)) { flex += 1; }
+            if (signup.healer.includes(id)) { flex += 1; }
+            if (signup.dps.includes(id)) { flex += 1; }
+
+            if (flex === 3) {
+              if (signup.tank.includes(id) && tankTempArray.length < tankCap) {
+                tankTempArray.push(id);
+              } else if (signup.healer.includes(id) && healerTempArray.length < healerCap) {
+                healerTempArray.push(id);
+              } else if (signup.dps.includes(id) && dpsTempArray.length < dpsCap) {
+                dpsTempArray.push(id);
+              }
+            }
+          }
+
+          // Since IDs are now out of order, resort for "real" array
+          const tankStarterArray = [];
+          const healerStarterArray = [];
+          const dpsStarterArray = [];
+          const starterArray = [];
+
+          for (let i = 0; i < shortlist.length; i += 1) {
+            const id = shortlist[i];
+
+            if (tankTempArray.includes(id)) {
+              tankStarterArray.push(id);
+              starterArray.push(id);
+            } else if (healerTempArray.includes(id)) {
+              healerStarterArray.push(id);
+              starterArray.push(id);
+            } else if (dpsTempArray.includes(id)) {
+              dpsStarterArray.push(id);
+              starterArray.push(id);
+            }
+          }
+
+          
+          const backupArray = [];
+
           signup.all.forEach((id) => {
-            // Calculate which role has the greatest current need
-            const tankInNeed = tankMax - signup.tank.length;
-            const healerInNeed = healerMax - signup.healer.length;
-            const dpsInNeed = dpsMax - signup.dps.length;
-            console.log(`In need numbers: Tank=${tankInNeed} Healer=${healerInNeed} DPS=${dpsInNeed}`);
-
-            // Attempt to place player in roles that have not enough or just enough signups
-
-            if (tankInNeed >= Math.max(healerInNeed, dpsInNeed, 1) && signup.tank.includes(id)) {
-              starter.all.push(id);
-              starter.tank.push(id);
-              return;
+            if (!starterArray.includes(id)) {
+              backupArray.push(id);
             }
-
-            if (healerInNeed >= Math.max(tankInNeed, dpsInNeed, 1) && signup.healer.includes(id)) {
-              starter.all.push(id);
-              starter.healer.push(id);
-              return;
-            }
-
-            if (dpsInNeed >= Math.max(tankInNeed, healerInNeed, 1) && signup.dps.includes(id)) {
-              starter.all.push(id);
-              starter.dps.push(id);
-              return;
-            }
-
-            // Place player in the role with largest current number of open starter positions
-
-            const tankOpenings = tankMax - starter.tank.length;
-            const healerOpenings = healerMax - starter.healer.length;
-            const dpsOpenings = dpsMax - starter.dps.length;
-
-            if (tankOpenings >= Math.max(healerOpenings, dpsOpenings, 1)
-            && signup.tank.includes(id)) {
-              starter.all.push(id);
-              starter.tank.push(id);
-              return;
-            }
-
-            if (healerOpenings >= Math.max(tankOpenings, dpsOpenings, 1)
-            && signup.healer.includes(id)) {
-              starter.all.push(id);
-              starter.healer.push(id);
-              return;
-            }
-
-            if (dpsOpenings >= Math.max(tankOpenings, healerOpenings, 1)
-            && signup.dps.includes(id)) {
-              starter.all.push(id);
-              starter.dps.push(id);
-              return;
-            }
-
-            // Place in first available opening
-
-            if (tankOpenings > 0 && signup.tank.includes(id)) {
-              starter.all.push(id);
-              starter.tank.push(id);
-              return;
-            }
-
-            if (healerOpenings > 0 && signup.healer.includes(id)) {
-              starter.all.push(id);
-              starter.healer.push(id);
-              return;
-            }
-
-            if (dpsOpenings > 0 && signup.dps.includes(id)) {
-              starter.all.push(id);
-              starter.dps.push(id);
-              return;
-            }
-
-            // No openings
-            if (!backup.all.includes(id)) {
-              backup.all.push(id);
-            }
-          }); // End of forEach signup loop here
+          });
 
           // Add all backup-specific signups to backup list
           backupRoles.forEach((role) => {
             signup[role].forEach((id) => {
-              if (!backup.all.includes(id)) {
-                backup.all.push(id);
+              if (!backupArray.includes(id)) {
+                backupArray.push(id);
               }
             });
           });
 
-          // Starters and backups are all chosen at this point
-          console.log(`Full list of starters ${JSON.stringify(starter.all)}`);
-          console.log(`Tank starters ${JSON.stringify(starter.tank)}`);
-          console.log(`Healer starters ${JSON.stringify(starter.healer)}`);
-          console.log(`DPS starters ${JSON.stringify(starter.dps)}`);
-          console.log(`Backups ${JSON.stringify(backup.all)}`);
+          console.log(`Tank Starters:   ${JSON.stringify(tankStarterArray)}`);
+          console.log(`Healer Starters: ${JSON.stringify(healerStarterArray)}`);
+          console.log(`DPS Starters:    ${JSON.stringify(dpsStarterArray)}`);
+          console.log(`Backups:         ${JSON.stringify(backupArray)}`);
+
+          const tankFieldValue = getRoleStarterFieldValue({ reaction, starterArray: tankStarterArray, role: 'Tank' });
+          const healerFieldValue = getRoleStarterFieldValue({ reaction, starterArray: healerStarterArray, role: 'Healer' });
+          const dpsFieldValue = getRoleStarterFieldValue({ reaction, starterArray: dpsStarterArray, role: 'DPS' });
 
           signupEmbed.fields = [];
+          signupEmbed.addField('Tank', tankFieldValue, true);
+          signupEmbed.addField('Healer', healerFieldValue, true);
+          signupEmbed.addField('DPS', dpsFieldValue, true);
+          addBackupFields({ reaction, backupArray });
 
-          signupEmbed.addField('Tank', getRoleStarterFieldValue({ reaction, starterArray: starter.tank }), true);
-          signupEmbed.addField('Healer', getRoleStarterFieldValue({ reaction, starterArray: starter.healer }), true);
-          signupEmbed.addField('DPS', getRoleStarterFieldValue({ reaction, starterArray: starter.dps }), true);
-          if (getBackupFieldValue({ reaction })) {
-            signupEmbed.addField('Backups', getBackupFieldValue({ reaction }));
-          }
+          // signupEmbed.addField('Tank', getRoleStarterFieldValue({ reaction, starterArray: starter.tank }), true);
+          // signupEmbed.addField('Healer', getRoleStarterFieldValue({ reaction, starterArray: starter.healer }), true);
+          // signupEmbed.addField('DPS', getRoleStarterFieldValue({ reaction, starterArray: starter.dps }), true);
+          // if () {
+          //   signupEmbed.addField('Backups', getBackupFieldValue({ reaction, backupArray }));
+          // }
           embedMessage.edit(signupEmbed);
         };
 
