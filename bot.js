@@ -251,7 +251,7 @@ client.on('message', (message) => {
               reaction.emoji.guild.members.cache.get(id).displayName,
             );
 
-            if (backup.all.indexOf(id) + 1 + 3 < backup.all.length) {
+            if (backupArray.indexOf(id) + 1 + 3 <= backupArray.length) {
               // Comma + space separated seems better than \n because this field can be pretty long
               displayName = displayName.concat('\n');
             }
