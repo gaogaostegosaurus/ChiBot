@@ -252,8 +252,7 @@ client.on('message', (message) => {
             );
 
             if (backupArray.indexOf(id) + 1 + 3 <= backupArray.length) {
-              // Comma + space separated seems better than \n because this field can be pretty long
-              displayName = displayName.concat('\n');
+              displayName = displayName.concat('\n'); // Add a carriage return if a name will appear under
             }
 
             if (backupField === 1) { backupField1Value = backupField1Value.concat(displayName); }
