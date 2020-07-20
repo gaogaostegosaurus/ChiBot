@@ -401,7 +401,6 @@ client.on('message', (message) => {
             }
           }
 
-          
           const backupArray = [];
 
           signup.all.forEach((id) => {
@@ -434,12 +433,6 @@ client.on('message', (message) => {
           signupEmbed.addField('DPS', dpsFieldValue, true);
           addBackupFields({ reaction, backupArray });
 
-          // signupEmbed.addField('Tank', getRoleStarterFieldValue({ reaction, starterArray: starter.tank }), true);
-          // signupEmbed.addField('Healer', getRoleStarterFieldValue({ reaction, starterArray: starter.healer }), true);
-          // signupEmbed.addField('DPS', getRoleStarterFieldValue({ reaction, starterArray: starter.dps }), true);
-          // if () {
-          //   signupEmbed.addField('Backups', getBackupFieldValue({ reaction, backupArray }));
-          // }
           embedMessage.edit(signupEmbed);
         };
 
