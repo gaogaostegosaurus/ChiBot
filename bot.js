@@ -261,8 +261,8 @@ client.on('message', (message) => {
             if (backupField === 3) { backupField3Value = backupField3Value.concat(displayName); }
           });
           if (backupField1Value) { signupEmbed.addField('Backups', backupField1Value, true); }
-          if (backupField2Value) { signupEmbed.addField('', backupField2Value, true); }
-          if (backupField3Value) { signupEmbed.addField('', backupField3Value, true); }
+          if (backupField2Value) { signupEmbed.addField('\u200b', backupField2Value, true); }
+          if (backupField3Value) { signupEmbed.addField('\u200b', backupField3Value, true); }
         };
 
         const chooseStarters = ({ // Function for (re)building starter lists
