@@ -169,15 +169,31 @@ client.on('message', (message) => {
           starterArray.forEach((id) => {
             // Create string of icons for this ID
             let jobIcons = '';
+            let jobIconCount = 0;
             jobList.forEach((job) => {
-              if (signup[job].includes(id)) {
+              // if (signup[job].includes(id) && jobIconCount < 3) {
+              if (signup[job].includes(id) && jobIconCount < 5) {
                 jobIcons = jobIcons.concat(reactionEmoji[job]);
+                jobIconCount += 1;
               }
             });
 
             // Set displayName to job icons + Discord nickname and add it to field value
             const displayName = jobIcons.concat(' ', reaction.emoji.guild.members.cache.get(id).displayName);
-            starterFieldValue = starterFieldValue.concat(displayName);
+
+            // Display any flex roles this person can fill
+            let flexIcons = '';
+            if (signup.tank.includes(id) && role !== 'Tank') {
+              flexIcons = flexIcons.concat(reactionEmoji.backup_tank);
+            }
+            if (signup.healer.includes(id) && role !== 'Healer') {
+              flexIcons = flexIcons.concat(reactionEmoji.backup_healer);
+            }
+            if (signup.dps.includes(id) && role !== 'DPS') {
+              flexIcons = flexIcons.concat(reactionEmoji.backup_dps);
+            }
+
+            starterFieldValue = starterFieldValue.concat(displayName, ' ', flexIcons);
 
             // Add a line break if not final ID
             if (starterArray.indexOf(id) + 1 < roleCap) {
@@ -200,7 +216,7 @@ client.on('message', (message) => {
           reaction,
           backupArray,
         } = {}) => {
-          if (!backupArray) { return; }
+          if (backupArray.length === 0) { return; }
 
           let backupField1Value = '';
           let backupField2Value = '';
@@ -264,146 +280,193 @@ client.on('message', (message) => {
           if (backupField3Value) { signupEmbed.addField('\u200b', backupField3Value, true); }
         };
 
+        let collectorTimeout;
+
         const chooseStarters = ({ // Function for (re)building starter lists
           reaction,
+          signupArray,
           // Only using reaction properties to find IDs, not the reaction itself (I think)
         } = {}) => {
-          // Reset all starter/backup data so that roles can be re-assigned
-          starter.all = [];
-          starter.tank = [];
-          starter.healer = [];
-          starter.dps = [];
-          backup.all = [];
+          let breakIndex = 0;
+          let tankTempArray = [];
+          let healerTempArray = [];
+          let dpsTempArray = [];
 
-          // Outline of algorithm process:
-          // Go through array to find at what index there are enough tank/healer/DPS/total members
-          // Create new array ending on that index
-          // With priority to time, place anyone who is single role
-          // Follow with double and triple role
-          // If someone wasn't placed, add them to backup
-          // Add all other signups to backup
+          for (let i = 0; i < signupArray.length; i += 1) {
+            if (signupArray.length === 0) { break; }
+            breakIndex = i;
+            console.log(`Starting assignment loop #${i + 1}`);
 
-          // Step 1:
-          // Go through array to find at what index there are enough tank/healer/DPS/total members
-          // Create new array ending on that index
+            // Reset arrays
+            tankTempArray = [];
+            healerTempArray = [];
+            dpsTempArray = [];
 
-          let tankCount = 0;
-          let healerCount = 0;
-          let dpsCount = 0;
-          let totalCount = 0;
-          const shortlist = [];
+            const thArray = [];
+            const tdArray = [];
+            const hdArray = [];
+            const thdArray = [];
 
-          for (let i = 0; i < signup.all.length; i += 1) {
-            const id = signup.all[i];
-            shortlist.push(id); // Place ID into shortlist
-            if (signup.tank.includes(id)) {
-              tankCount += 1;
-            }
-            if (signup.healer.includes(id)) {
-              healerCount += 1;
-            }
-            if (signup.dps.includes(id)) {
-              dpsCount += 1;
-            }
+            // const backupTempArray = [];
 
-            totalCount += 1;
+            console.log('Sorting signups to temp arrays');
 
-            if (tankCount >= tankCap && healerCount >= healerCap && dpsCount >= dpsCap
-            && totalCount >= tankCap + healerCap + dpsCap) {
-              break; // Stop making array once sufficient IDs have been pushed
-            }
-
-            // Just runs through the whole array if signups are insufficient
-          }
-          console.log(`Shortlist: ${JSON.stringify(shortlist)}`);
-
-          // Step 2:
-          // With priority to time, place anyone who is single role
-          // Follow with double or triple flex
-
-          const tankTempArray = [];
-          const healerTempArray = [];
-          const dpsTempArray = [];
-
-          for (let i = 0; i < shortlist.length; i += 1) {
-            const id = shortlist[i];
-            let flex = 0;
-            if (signup.tank.includes(id)) { flex += 1; }
-            if (signup.healer.includes(id)) { flex += 1; }
-            if (signup.dps.includes(id)) { flex += 1; }
-
-            if (flex === 1) {
-              if (signup.tank.includes(id) && tankTempArray.length < tankCap) {
+            for (let j = 0; j <= i; j += 1) {
+              const id = signupArray[j];
+              if (signup.tank.includes(id)
+              && signup.healer.includes(id) && signup.dps.includes(id)) {
+                thdArray.push(id);
+              } else if (signup.tank.includes(id) && signup.healer.includes(id)) {
+                thArray.push(id);
+              } else if (signup.tank.includes(id) && signup.dps.includes(id)) {
+                tdArray.push(id);
+              } else if (signup.healer.includes(id) && signup.dps.includes(id)) {
+                hdArray.push(id);
+              } else if (signup.tank.includes(id)) {
                 tankTempArray.push(id);
-              } else if (signup.healer.includes(id) && healerTempArray.length < healerCap) {
+              } else if (signup.healer.includes(id)) {
                 healerTempArray.push(id);
-              } else if (signup.dps.includes(id) && dpsTempArray.length < dpsCap) {
+              } else if (signup.dps.includes(id)) {
                 dpsTempArray.push(id);
               }
             }
-          }
 
-          for (let i = 0; i < shortlist.length; i += 1) {
-            const id = shortlist[i];
-            let flex = 0;
-            if (signup.tank.includes(id)) { flex += 1; }
-            if (signup.healer.includes(id)) { flex += 1; }
-            if (signup.dps.includes(id)) { flex += 1; }
+            // Reassign flex signups
+            let flexCount = thArray.length + tdArray.length
+              + hdArray.length + thdArray.length;
 
-            if (flex === 2) {
-              if (signup.tank.includes(id) && tankTempArray.length < tankCap) {
-                tankTempArray.push(id);
-              } else if (signup.healer.includes(id) && healerTempArray.length < healerCap) {
-                healerTempArray.push(id);
-              } else if (signup.dps.includes(id) && dpsTempArray.length < dpsCap) {
-                dpsTempArray.push(id);
+            while (flexCount > 0) {
+              console.log(`Flex numbers = ${flexCount} (${thArray.length}+${tdArray.length}+${hdArray.length}+${thdArray.length})`);
+              const tankCount = tankTempArray.length;
+              const healerCount = healerTempArray.length;
+              const dpsCount = dpsTempArray.length;
+              const thCount = thArray.length;
+              const tdCount = tdArray.length;
+              const hdCount = hdArray.length;
+              const thdCount = thdArray.length;
+              const tankFlex = thCount + tdCount + thdCount;
+              const healerFlex = thCount + hdCount + thdCount;
+              const dpsFlex = tdCount + hdCount + thdCount;
+              const tankNeed = tankCap - tankCount;
+              const healerNeed = healerCap - healerCount;
+              const dpsNeed = dpsCap - dpsCount;
+
+              let tankFlexNeed = 0;
+              let healerFlexNeed = 0;
+              let dpsFlexNeed = 0;
+              if (tankFlex > 0) { tankFlexNeed = tankNeed; }
+              if (healerFlex > 0) { healerFlexNeed = healerNeed; }
+              if (dpsFlex > 0) { dpsFlexNeed = dpsNeed; }
+              const maxFlexNeed = Math.max(tankFlexNeed, healerFlexNeed, dpsFlexNeed);
+              // There has got to be an easier way to do this but whatever
+
+              if (tankFlexNeed > 0 && tankFlexNeed >= maxFlexNeed) {
+                console.log('Flexing to tank');
+                if (healerFlex > 0 && healerNeed - healerFlex <= dpsNeed - dpsFlex && thCount > 0) {
+                  tankTempArray.push(thArray[0]);
+                  thArray.splice(0, 1);
+                  console.log('Reassigned TH => T');
+                } else if (dpsFlex > 0 && tdCount > 0) {
+                  tankTempArray.push(tdArray[0]);
+                  tdArray.splice(0, 1);
+                  console.log('Reassigned TD => T');
+                } else if (healerFlex > 0 && thCount > 0) {
+                  tankTempArray.push(thArray[0]);
+                  thArray.splice(0, 1);
+                  console.log('Reassigned TH => T (confirm if needed)');
+                } else {
+                  tankTempArray.push(thdArray[0]);
+                  thdArray.splice(0, 1);
+                  console.log('Reassigned THD => T');
+                }
+              } else if (healerFlexNeed > 0 && healerFlexNeed >= maxFlexNeed) {
+                console.log('Flexing to H');
+                if (tankFlex > 0 && tankNeed - tankFlex <= dpsNeed - dpsFlex && thCount > 0) {
+                  healerTempArray.push(thArray[0]);
+                  thArray.splice(0, 1);
+                  console.log('Reassigned TH => H');
+                } else if (dpsFlex > 0 && hdCount > 0) {
+                  healerTempArray.push(hdArray[0]);
+                  hdArray.splice(0, 1);
+                  console.log('Reassigned HD => H');
+                } else if (tankFlex > 0 && thCount > 0) {
+                  healerTempArray.push(thArray[0]);
+                  thArray.splice(0, 1);
+                  console.log('Reassigned TH => H (confirm if needed)');
+                } else {
+                  healerTempArray.push(thdArray[0]);
+                  thdArray.splice(0, 1);
+                  console.log('Reassigned THD => H');
+                }
+              } else if (dpsFlexNeed > 0 && dpsFlexNeed >= maxFlexNeed) {
+                console.log('Flexing to D');
+                if (tankFlex > 0 && tankNeed - tankFlex <= healerNeed - healerFlex && tdCount > 0) {
+                  dpsTempArray.push(tdArray[0]);
+                  tdArray.splice(0, 1);
+                  console.log('Reassigned TD => D');
+                } else if (healerFlex > 0 && hdCount > 0) {
+                  dpsTempArray.push(hdArray[0]);
+                  hdArray.splice(0, 1);
+                  console.log('Reassigned HD => D');
+                } else if (tankFlex > 0 && tdCount > 0) {
+                  dpsTempArray.push(tdArray[0]);
+                  tdArray.splice(0, 1);
+                  console.log('Reassigned TD => D (confirm if needed)');
+                } else {
+                  dpsTempArray.push(thdArray[0]);
+                  thdArray.splice(0, 1);
+                  console.log('Reassigned THD => D');
+                }
               }
+
+              // Update flex signup count
+              flexCount = thArray.length + tdArray.length
+                + hdArray.length + thdArray.length;
+            }
+
+            let sufficientTanks = false;
+            let sufficientHealers = false;
+            let sufficientDPS = false;
+
+            if (tankTempArray.length >= tankCap) { // >= because of single-role shenanigans
+              sufficientTanks = true;
+            }
+
+            if (healerTempArray.length >= healerCap) {
+              sufficientHealers = true;
+            }
+
+            if (dpsTempArray.length >= dpsCap) {
+              sufficientDPS = true;
+            }
+
+            if (sufficientTanks && sufficientHealers && sufficientDPS) {
+              console.log(`Breaking loop after ${i + 1} entries`);
+              break;
             }
           }
 
-          for (let i = 0; i < shortlist.length; i += 1) {
-            const id = shortlist[i];
-            let flex = 0;
-            if (signup.tank.includes(id)) { flex += 1; }
-            if (signup.healer.includes(id)) { flex += 1; }
-            if (signup.dps.includes(id)) { flex += 1; }
-
-            if (flex === 3) {
-              if (signup.tank.includes(id) && tankTempArray.length < tankCap) {
-                tankTempArray.push(id);
-              } else if (signup.healer.includes(id) && healerTempArray.length < healerCap) {
-                healerTempArray.push(id);
-              } else if (signup.dps.includes(id) && dpsTempArray.length < dpsCap) {
-                dpsTempArray.push(id);
-              }
-            }
-          }
-
-          // Since IDs are now out of order, resort for "real" array
           const tankStarterArray = [];
           const healerStarterArray = [];
           const dpsStarterArray = [];
-          const starterArray = [];
+          const backupArray = [];
 
-          for (let i = 0; i < shortlist.length; i += 1) {
-            const id = shortlist[i];
-
-            if (tankTempArray.includes(id)) {
+          // Push truncated array into new starter array
+          // Limit array size due to single-role shenanigans
+          for (let i = 0; i <= breakIndex; i += 1) {
+            const id = signupArray[i];
+            if (tankTempArray.includes(id) && tankStarterArray.length < tankCap) {
               tankStarterArray.push(id);
-              starterArray.push(id);
-            } else if (healerTempArray.includes(id)) {
+            } else if (healerTempArray.includes(id) && healerStarterArray.length < healerCap) {
               healerStarterArray.push(id);
-              starterArray.push(id);
-            } else if (dpsTempArray.includes(id)) {
+            } else if (dpsTempArray.includes(id) && dpsStarterArray.length < dpsCap) {
               dpsStarterArray.push(id);
-              starterArray.push(id);
             }
           }
 
-          const backupArray = [];
-
-          signup.all.forEach((id) => {
-            if (!starterArray.includes(id)) {
+          signupArray.forEach((id) => {
+            if (!tankStarterArray.includes(id) && !healerStarterArray.includes(id)
+            && !dpsStarterArray.includes(id) && !backupArray.includes(id)) {
               backupArray.push(id);
             }
           });
@@ -432,10 +495,9 @@ client.on('message', (message) => {
           signupEmbed.addField('DPS', dpsFieldValue, true);
           addBackupFields({ reaction, backupArray });
 
+          // clearTimeout(embedTimeout);
           embedMessage.edit(signupEmbed);
         };
-
-        let collectionTimeout;
 
         collector.on('collect', (reaction, user) => { // Someone reacts to the embed
           const reactionJob = reaction.emoji.name; // Job they reacted as
@@ -455,9 +517,8 @@ client.on('message', (message) => {
             signup.dps.push(user.id);
           }
 
-          // Backup roles specifically not handled here
-          clearTimeout(collectionTimeout);
-          collectionTimeout = setTimeout(chooseStarters, embedDelay, { reaction });
+          clearTimeout(collectorTimeout);
+          collectorTimeout = setTimeout(chooseStarters, embedDelay, { reaction, signupArray: signup.all });
         });
 
         collector.on('remove', (reaction, user) => {
@@ -468,12 +529,14 @@ client.on('message', (message) => {
           && !signup.pld.includes(user.id) && !signup.war.includes(user.id)
           && !signup.drk.includes(user.id) && !signup.gnb.includes(user.id)) {
             signup.tank = signup.tank.filter((item) => item !== user.id);
+            console.log('Removed from tank');
           }
 
           if (healerJobs.includes(reactionJob)
           && !signup.whm.includes(user.id) && !signup.sch.includes(user.id)
           && !signup.ast.includes(user.id)) {
             signup.healer = signup.healer.filter((item) => item !== user.id);
+            console.log('Removed from healer');
           }
 
           if (dpsJobs.includes(reactionJob)
@@ -484,15 +547,17 @@ client.on('message', (message) => {
           && !signup.blm.includes(user.id) && !signup.smn.includes(user.id)
           && !signup.rdm.includes(user.id)) {
             signup.dps = signup.dps.filter((item) => item !== user.id);
+            console.log('Removed from dps');
           }
 
           if (!signup.tank.includes(user.id) && !signup.healer.includes(user.id)
           && !signup.dps.includes(user.id)) {
             signup.all = signup.all.filter((item) => item !== user.id);
+            console.log('Removed from all');
           }
 
-          clearTimeout(collectionTimeout);
-          collectionTimeout = setTimeout(chooseStarters, embedDelay, { reaction });
+          clearTimeout(collectorTimeout);
+          collectorTimeout = setTimeout(chooseStarters, embedDelay, { reaction, signupArray: signup.all });
         });
       }).catch(console.error);
   }
