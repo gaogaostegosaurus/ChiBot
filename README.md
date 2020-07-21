@@ -15,6 +15,7 @@ The clone command creates a ChiBot folder inside the folder you run the command 
 - full: 2 tanks, 2 healers, 4 dps (this is the default if you leave off the argument)
 - light: 1 tank, 1 healer, 2 dps
 - alliance: 3 tanks, 6 healers, 15 dps
+- custom: *a* tanks, *b* healers, *c* dps
 
 ### Signup
 Click any roles you **prefer**. The bot will automatically try to sort the current signup list. Unclick all roles to remove yourself from consideration entirely.
