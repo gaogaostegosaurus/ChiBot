@@ -28,3 +28,9 @@ Click `:backup_[role]:` to sign up as a backup and give yourself low priority on
 1) Priority goes to first signups. If the bot can place you, it will place you before anyone else that signs up afterwards.
 2) If you pick more than one role, the bot attempts to use you to fill the largest gap between current and needed signups. In the event of a tie, since someone has to win tiebreakers, tank > healer > DPS. (DPS likely often win though because of the larger amount of slots.)
 3) Anyone that doesn't fit gets placed at the top of the backup list, sorted by their signup time.
+
+## To do
+
+1) Backup list is pretty janky
+2) More algorithm testing
+3) A non-volatile db, lol
