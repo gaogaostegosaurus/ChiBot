@@ -20,7 +20,7 @@ The clone command creates a ChiBot folder inside the folder you run the command 
 ### Signup
 Click any roles you **prefer**. The bot will automatically try to sort the current signup list. Unclick all roles to remove yourself from consideration entirely.
 
-Click backup_(role) to sign up as a backup and give yourself low priority on the list, or to let people know you can (but prefer not to) switch to these roles.
+Click `backup_[role]` to sign up as a backup and give yourself low priority on the list, or to let people know you can (but prefer not to) switch to these roles.
 
 ## FAQ
 
