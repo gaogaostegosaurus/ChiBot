@@ -24,6 +24,12 @@ Click `:backup_[role]:` to sign up as a backup and give yourself low priority on
 
 ## FAQ
 
+### What does it mean?
+![Example](/img/example.png)
+- This person is signed up as NIN and RDM.
+- The icon on the right shows that they have also signed up as 1 or more tank jobs, but DPS has a greater need right now.
+- Since there is no healer icon on the right, they didn't sign up as a healer job at all.
+
 ### How does the bot decide where to put people?
 1) Priority goes to first signups. If the bot can place you, it will place you before anyone else that signs up afterwards.
 2) If you pick more than one role, the bot attempts to use you to fill the largest gap between current and needed signups. In the event of a tie, since someone has to win tiebreakers, tank > healer > DPS. (DPS likely often win though because of the larger amount of slots.)
