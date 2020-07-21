@@ -98,8 +98,8 @@ client.on('message', (message) => {
     // Create base embed
     const signupEmbed = new Discord.MessageEmbed()
       .setTitle(embedTitle)
-      .setDescription('https://github.com/gaogaostegosaurus/ChiBot')
-      .setFooter('Click on your preferred job(s) to sign up, and the bot will attempt to assign/reassign you to a needed role.\nJust want to be a backup? Click the backup_role you can fill.\n')
+      .setDescription('About: https://github.com/gaogaostegosaurus/ChiBot')
+      .setFooter('TL;DR: Click on your preferred job(s). The bot will assign/reassign players to needed roles.\nJust want to be a backup? Click the backup_role you can fill.\n')
       .setTimestamp();
 
     const openString = '<OPEN>'; // Set string to designate open slots here
