@@ -1,0 +1,1 @@
+npm init -y && npm install discord.js && git pull https://github.com/gaogaostegosaurus/ChiBot.git && node .
