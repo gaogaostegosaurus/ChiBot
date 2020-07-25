@@ -17,7 +17,7 @@ You will also need emojis for every job in lowercase (`:pld:`, `:war:`, etc.) as
 - full: 2 tanks, 2 healers, 4 dps (this is the default if you leave off the argument)
 - light: 1 tank, 1 healer, 2 dps
 - alliance: 3 tanks, 6 healers, 15 dps
-- custom: *a* tanks, *b* healers, *c* dps
+- custom: *a* tanks, *b* healers, *c* dps (Note: this has not be tested well yet!)
 
 ### Signup
 Click the `:job(s):` you **prefer**. The bot will automatically try to sort the current signup list. Unclick all roles to remove yourself from consideration entirely.
