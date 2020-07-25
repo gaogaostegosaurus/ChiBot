@@ -8,6 +8,8 @@ Install git and node.js.
 
 The clone command creates a ChiBot folder inside the folder you run the command from.
 
+You will also need emojis for every job in lowercase (`:pld:`, `:war:`, etc.) as well as `:backup_tank:`, `:backup_healers:`, and `:backup_dps:`.
+
 ## How to use
 
 ### Event organizers
