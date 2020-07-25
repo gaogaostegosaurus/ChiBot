@@ -4,7 +4,7 @@
 
 Install git and node.js.
 
-`git clone && cd ChiBot && npm install && node .`
+`git clone https://github.com/gaogaostegosaurus/ChiBot.git && cd ChiBot && bash start.sh`
 
 The clone command creates a ChiBot folder inside the folder you run the command from.
 
