@@ -512,7 +512,7 @@ client.on('message', (message) => {
                 overflowFieldValue = overflowFieldValue.concat(', ');
               }
             });
-            signupEmbed.addField('Backups', overflowFieldValue);
+            signupEmbed.addField('Overflow', overflowFieldValue);
           }
 
           clearTimeout(embedTimeout);
