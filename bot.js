@@ -8,10 +8,10 @@
 // LOOK AT THESE FUCKING GLOBALS
 // MAN, ARE YOU IN THE MOOD FOR SOME FUCKING SPAGHETTI CODE TOO?
 
-// Bot config variables
+// Embed config variables
 const embedDelay = 1000; // ms to wait before changing embed (to prevent rate limiting?)
 const openString = '<OPEN>'; // Set string to designate open slots
-const maxJobIcons = 5; // Maximum number of icons next to a name
+const maxJobIcons = 2; // Maximum number of icons next to a name - changes to role icon after this
 
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
@@ -110,8 +110,10 @@ client.on('message', (message) => {
 
     let initialFieldValue = '';
     for (let i = 1; i <= groupCap; i += 1) {
-      initialFieldValue = initialFieldValue.concat(openString); // Fill with string showing open slots
-      if (i < groupCap) { initialFieldValue = initialFieldValue.concat('\n'); } // Add carriage return for next line
+      // Fill with string showing open slots
+      initialFieldValue = initialFieldValue.concat(openString);
+      // Add carriage return for next line
+      if (i < groupCap) { initialFieldValue = initialFieldValue.concat('\n'); }
     }
     signupEmbed.addField('Group 1', initialFieldValue, true);
 
@@ -148,6 +150,9 @@ client.on('message', (message) => {
                 if (jobIconCount < maxJobIcons) {
                   jobIcons = jobIcons.concat(reactionEmoji[job]);
                   jobIconCount += 1;
+                } else {
+                  jobIcons = '';
+                  jobIcons = jobIcons.concat(reactionEmoji.tank);
                 }
               });
             } else if (e.healer) {
@@ -155,6 +160,9 @@ client.on('message', (message) => {
                 if (jobIconCount < maxJobIcons) {
                   jobIcons = jobIcons.concat(reactionEmoji[job]);
                   jobIconCount += 1;
+                } else {
+                  jobIcons = '';
+                  jobIcons = jobIcons.concat(reactionEmoji.healer);
                 }
               });
             } else if (e.dps) {
@@ -162,6 +170,9 @@ client.on('message', (message) => {
                 if (jobIconCount < maxJobIcons) {
                   jobIcons = jobIcons.concat(reactionEmoji[job]);
                   jobIconCount += 1;
+                } else {
+                  jobIcons = '';
+                  jobIcons = jobIcons.concat(reactionEmoji.dps);
                 }
               });
             }
@@ -171,14 +182,13 @@ client.on('message', (message) => {
             if (e.flex) {
               e.flex.forEach((role) => {
                 flexIcons = flexIcons.concat(reactionEmoji[role]);
-                jobIconCount += 1;
               });
             }
 
             // Create display for field
-            let display = jobIcons.concat(' ', e.name);
+            let display = jobIcons.concat(' ', e.name.slice(0, 21));
             if (flexIcons) {
-              display = display.concat(' (', flexIcons, ')');
+              display = display.concat('  (Flex:', flexIcons, ')');
             }
 
             // Add entire string to group field value
@@ -379,7 +389,6 @@ client.on('message', (message) => {
                   thdArray.splice(0, 1);
                 }
               } else if (dpsFlexNeed > 0 && dpsFlexNeed >= maxFlexNeed) {
-                // console.log('Flexing to D');
                 if (tankFlex > 0 && tankNeed - tankFlex <= healerNeed - healerFlex && tdCount > 0) {
                   dpsArray.push({
                     time: tdArray[0].time,
@@ -417,7 +426,6 @@ client.on('message', (message) => {
                     flex: ['tank', 'healer'],
                   });
                   thdArray.splice(0, 1);
-                  // console.log('Reassigned THD => D');
                 }
               }
 
@@ -460,6 +468,7 @@ client.on('message', (message) => {
             group3Array = tankArray.concat(healerArray, dpsArray);
             group3Array.sort((a, b) => ((a.time > b.time) ? 1 : -1));
           }
+          overflowArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
         };
 
         const editEmbed = () => {
@@ -471,21 +480,26 @@ client.on('message', (message) => {
           } else {
             let group1FieldValue = '';
             for (let i = 1; i <= groupCap; i += 1) {
-              group1FieldValue = group1FieldValue.concat(openString); // Fill with string showing open slots
-              if (i < groupCap) { group1FieldValue = group1FieldValue.concat('\n'); } // Add carriage return for next line
+              // Fill with string showing open slots
+              group1FieldValue = group1FieldValue.concat(openString);
+              // Add carriage return for next line
+              if (i < groupCap) { group1FieldValue = group1FieldValue.concat('\n'); }
             }
             signupEmbed.addField('Group 1', group1FieldValue, true);
+            // signupEmbed.addField('\u200B', group1FieldValue[1], true);
+            // signupEmbed.addField('\u200B', group1FieldValue[2], true);
           }
-          
 
           fillGroup({ currentArray: overflowArray, group: '2' });
           if (group2Array && group2Array.length > 0) {
+            // signupEmbed.addField('\u200B', '\u200B') // Create a spacer field
             const group2FieldValue = getGroupFieldValue({ groupArray: group2Array, group: '2' });
             signupEmbed.addField('Group 2', group2FieldValue, true);
           }
 
           fillGroup({ currentArray: overflowArray, group: '3' });
           if (group3Array && group3Array.length > 0) {
+            // signupEmbed.addField('\u200B', '\u200B') // Create a spacer field
             const group3FieldValue = getGroupFieldValue({ groupArray: group3Array, group: '3' });
             signupEmbed.addField('Group 3', group3FieldValue, true);
           }
@@ -501,8 +515,10 @@ client.on('message', (message) => {
             signupEmbed.addField('Backups', overflowFieldValue);
           }
 
-          // clearTimeout(embedTimeout);
-          embedMessage.edit(signupEmbed);
+          clearTimeout(embedTimeout);
+          embedTimeout = setTimeout(() => {
+            embedMessage.edit(signupEmbed);
+          }, embedDelay);
         };
 
         collector.on('collect', (reaction, user) => { // Someone reacts to the embed
