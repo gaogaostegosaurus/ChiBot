@@ -36,9 +36,6 @@ client.on('message', (message) => {
   // Create array to keep track of all player info
   const signupArray = [];
 
-  // This keeps track of overflow between groups
-  let overflowArray = [];
-
   // Define job emojis
   const reactionEmoji = {};
   const emojiList = []; // After the forEach below, this contains all the job emojis
@@ -85,26 +82,12 @@ client.on('message', (message) => {
 
     const groupCap = tankCap + healerCap + dpsCap;
 
-    // Set up signup object and arrays
-    // const signup = {};
-    // signup.tank = [];
-    // signup.healer = [];
-    // signup.dps = [];
-    // signup.all = [];
-    // backupRoles.forEach((role) => {
-    //   signup[role] = [];
-    // });
-
-    // Set up starter/backup objects - arrays are filled in with function below
-    // const starter = {};
-    // const backup = {};
-
     message.delete({ timeout: 5000, reason: 'Cleanup command phrase after 5 seconds' });
 
     // Create base embed
     const signupEmbed = new Discord.MessageEmbed()
       .setTitle(embedTitle)
-      .setDescription('How to use: https://github.com/gaogaostegosaurus/ChiBot\nTL;DR: Click on job(s) you actually want to play.')
+      .setDescription('How to use: https://github.com/gaogaostegosaurus/ChiBot\nTL;DR: Click on job(s) you really want to play.')
       // .setFooter('')
       .setTimestamp();
 
@@ -211,8 +194,9 @@ client.on('message', (message) => {
           return groupFieldValue;
         };
 
+        let fillArray = []; // Define here for the next two functions?
+
         const fillGroup = ({ // Function for (re)building starter lists
-          currentArray,
           group,
         } = {}) => {
           let tankArray = [];
@@ -221,13 +205,12 @@ client.on('message', (message) => {
 
           // This loop tries to create a group with the fewest possible signups
           // If it fails, then it increases by 1 and repeats.
-          for (let i = 0; i < currentArray.length; i += 1) {
-            if (currentArray.length === 0) { break; } // Array is empty
+          for (let i = 0; i < fillArray.length; i += 1) {
+            if (fillArray.length === 0) { break; } // Array is empty
             // Reset arrays
             tankArray = [];
             healerArray = [];
             dpsArray = [];
-            overflowArray = [];
 
             const thArray = [];
             const tdArray = [];
@@ -235,51 +218,45 @@ client.on('message', (message) => {
             const thdArray = [];
 
             for (let j = 0; j <= i; j += 1) {
-              if (currentArray[j].tank.length >= 1
-              && currentArray[j].healer.length >= 1
-              && currentArray[j].dps.length >= 1) {
-                thdArray.push(currentArray[j]);
-              } else if (currentArray[j].tank.length >= 1
-              && currentArray[j].healer.length >= 1) {
-                thArray.push(currentArray[j]);
-              } else if (currentArray[j].tank.length >= 1
-              && currentArray[j].dps.length >= 1) {
-                tdArray.push(currentArray[j]);
-              } else if (currentArray[j].healer.length >= 1
-              && currentArray[j].dps.length >= 1) {
-                hdArray.push(currentArray[j]);
-              } else if (currentArray[j].tank.length >= 1) {
+              if (fillArray[j].tank.length >= 1
+              && fillArray[j].healer.length >= 1
+              && fillArray[j].dps.length >= 1) {
+                thdArray.push(fillArray[j]);
+              } else if (fillArray[j].tank.length >= 1
+              && fillArray[j].healer.length >= 1) {
+                thArray.push(fillArray[j]);
+              } else if (fillArray[j].tank.length >= 1
+              && fillArray[j].dps.length >= 1) {
+                tdArray.push(fillArray[j]);
+              } else if (fillArray[j].healer.length >= 1
+              && fillArray[j].dps.length >= 1) {
+                hdArray.push(fillArray[j]);
+              } else if (fillArray[j].tank.length >= 1) {
                 if (tankArray.length < tankCap) {
                   tankArray.push({
-                    time: currentArray[j].time,
-                    id: currentArray[j].id,
-                    name: currentArray[j].name,
-                    tank: currentArray[j].tank,
+                    time: fillArray[j].time,
+                    id: fillArray[j].id,
+                    name: fillArray[j].name,
+                    tank: fillArray[j].tank,
                   });
-                } else {
-                  overflowArray.push(currentArray[j]);
                 }
-              } else if (currentArray[j].healer.length >= 1) {
+              } else if (fillArray[j].healer.length >= 1) {
                 if (healerArray.length < healerCap) {
                   healerArray.push({
-                    time: currentArray[j].time,
-                    id: currentArray[j].id,
-                    name: currentArray[j].name,
-                    healer: currentArray[j].healer,
+                    time: fillArray[j].time,
+                    id: fillArray[j].id,
+                    name: fillArray[j].name,
+                    healer: fillArray[j].healer,
                   });
-                } else {
-                  overflowArray.push(currentArray[j]);
                 }
-              } else if (currentArray[j].dps.length >= 1) {
+              } else if (fillArray[j].dps.length >= 1) {
                 if (dpsArray.length < dpsCap) {
                   dpsArray.push({
-                    time: currentArray[j].time,
-                    id: currentArray[j].id,
-                    name: currentArray[j].name,
-                    dps: currentArray[j].dps,
+                    time: fillArray[j].time,
+                    id: fillArray[j].id,
+                    name: fillArray[j].name,
+                    dps: fillArray[j].dps,
                   });
-                } else {
-                  overflowArray.push(currentArray[j]);
                 }
               }
             }
@@ -453,7 +430,6 @@ client.on('message', (message) => {
             if (sufficientTanks && sufficientHealers && sufficientDPS) {
               console.log(`Found sufficient members after ${i + 1} entries`);
               // Dump everyone else in overflow
-              overflowArray = overflowArray.concat(thArray, tdArray, hdArray, thdArray);
               break;
             }
           }
@@ -468,47 +444,69 @@ client.on('message', (message) => {
             group3Array = tankArray.concat(healerArray, dpsArray);
             group3Array.sort((a, b) => ((a.time > b.time) ? 1 : -1));
           }
-          overflowArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
         };
 
         const editEmbed = () => {
           signupEmbed.fields = [];
-          fillGroup({ currentArray: signupArray, group: '1' });
+
+          // Set signupArray to a temporary fill Array
+          fillArray = [...signupArray];
+
+          fillGroup({ group: '1' });
           if (group1Array && group1Array.length > 0) {
             const group1FieldValue = getGroupFieldValue({ groupArray: group1Array, group: '1' });
             signupEmbed.addField('Group 1', group1FieldValue, true);
-          } else {
-            let group1FieldValue = '';
-            for (let i = 1; i <= groupCap; i += 1) {
-              // Fill with string showing open slots
-              group1FieldValue = group1FieldValue.concat(openString);
-              // Add carriage return for next line
-              if (i < groupCap) { group1FieldValue = group1FieldValue.concat('\n'); }
-            }
-            signupEmbed.addField('Group 1', group1FieldValue, true);
-            // signupEmbed.addField('\u200B', group1FieldValue[1], true);
-            // signupEmbed.addField('\u200B', group1FieldValue[2], true);
+          // } else {
+          //   let group1FieldValue = '';
+          //   for (let i = 1; i <= groupCap; i += 1) {
+          //     // Fill with string showing open slots
+          //     group1FieldValue = group1FieldValue.concat(openString);
+          //     // Add carriage return for next line
+          //     if (i < groupCap) { group1FieldValue = group1FieldValue.concat('\n'); }
+          //   }
+          //   signupEmbed.addField('Group 1', group1FieldValue, true);
+          //   // signupEmbed.addField('\u200B', group1FieldValue[1], true);
+          //   // signupEmbed.addField('\u200B', group1FieldValue[2], true);
+          // it appears I forgot I already wrote this
           }
 
-          fillGroup({ currentArray: overflowArray, group: '2' });
+          for (let i = 0; i < group1Array.length; i += 1) {
+            for (let j = fillArray.length - 1; j >= 0; j -= 1) { // Go backwards due to splicing
+              if (fillArray[j].id === group1Array[i].id) { fillArray.splice(j, 1); }
+            }
+          }
+
+          fillGroup({ group: '2' });
           if (group2Array && group2Array.length > 0) {
             // signupEmbed.addField('\u200B', '\u200B') // Create a spacer field
             const group2FieldValue = getGroupFieldValue({ groupArray: group2Array, group: '2' });
             signupEmbed.addField('Group 2', group2FieldValue, true);
           }
 
-          fillGroup({ currentArray: overflowArray, group: '3' });
+          for (let i = 0; i < group2Array.length; i += 1) {
+            for (let j = fillArray.length - 1; j >= 0; j -= 1) { // Go backwards due to splicing
+              if (fillArray[j].id === group2Array[i].id) { fillArray.splice(j, 1); }
+            }
+          }
+
+          fillGroup({ group: '3' });
           if (group3Array && group3Array.length > 0) {
             // signupEmbed.addField('\u200B', '\u200B') // Create a spacer field
             const group3FieldValue = getGroupFieldValue({ groupArray: group3Array, group: '3' });
             signupEmbed.addField('Group 3', group3FieldValue, true);
           }
 
-          if (overflowArray && overflowArray.length > 0) {
+          for (let i = 0; i < group3Array.length; i += 1) {
+            for (let j = fillArray.length - 1; j >= 0; j -= 1) { // Go backwards due to splicing
+              if (fillArray[j].id === group3Array[i].id) { fillArray.splice(j, 1); }
+            }
+          }
+
+          if (fillArray && fillArray.length > 0) {
             let overflowFieldValue = '';
-            overflowArray.forEach((e) => {
+            fillArray.forEach((e) => {
               overflowFieldValue = overflowFieldValue.concat(e.name);
-              if (overflowArray.indexOf(e) < overflowArray.length - 1) {
+              if (fillArray.indexOf(e) < fillArray.length - 1) {
                 overflowFieldValue = overflowFieldValue.concat(', ');
               }
             });
@@ -530,7 +528,7 @@ client.on('message', (message) => {
             // Find index of ID
             // Since ID is unique (I think) best to use this for searching
             index = signupArray.findIndex((e) => e.id === user.id);
-            // Update name (if it has changed?)
+            // Update name to allow for changes
             signupArray[index].name = reaction.emoji.guild.members.cache.get(user.id).displayName;
           } else {
             // Player has not signed up yet
@@ -569,7 +567,7 @@ client.on('message', (message) => {
           // Update name
           signupArray[index].name = reaction.emoji.guild.members.cache.get(user.id).displayName;
 
-          // Remove job from the array of jobs
+          // Remove reacted job from the array of jobs
           if (tankJobs.includes(reactionJob)) {
             signupArray[index].tank = signupArray[index].tank.filter(
               (job) => job !== reactionJob,
