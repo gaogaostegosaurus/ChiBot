@@ -4,9 +4,7 @@
 
 ### Signing up
 
-Click the `:job(s):` you **prefer**. The bot will automatically try to sort the current signup list. Unclick all roles to remove yourself from consideration entirely.
-
-Click `:backup_[role]:` to sign up as a backup and give yourself low priority on the list, or to let people know you can (but prefer not to) switch to these roles.
+Click the `:job(s):` you **prefer** to play.
 
 ### For event organizers
 
@@ -16,13 +14,15 @@ Click `:backup_[role]:` to sign up as a backup and give yourself low priority on
 - alliance: 3 tanks, 6 healers, 15 dps
 - custom: *a* tanks, *b* healers, *c* dps (disabled for now)
 
+Anyone who signs up will be grouped and given job assignments.
+
 ### For installation
 
 Install git and node.js, then `git clone && cd ChiBot && npm install && node .`
 
 The clone command creates a ChiBot folder inside the folder you run the command from.
 
-You will also need emojis for every job in lowercase (`:pld:`, `:war:`, etc.) as well as `:backup_tank:`, `:backup_healers:`, and `:backup_dps:`.
+You will also need emojis for every job in lowercase (`:pld:`, `:war:`, etc.) as well as `:tank:`, `:healer:`, and `:dps:`.
 
 ## FAQ
 
