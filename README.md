@@ -2,12 +2,6 @@
 
 ## How to use
 
-<<<<<<< HEAD
-### Signing up
-=======
-`git clone https://github.com/gaogaostegosaurus/ChiBot.git && cd ChiBot && bash start.sh`
->>>>>>> 334412beb6acc212f587e5768893c87d23031bfd
-
 Click the `:job(s):` you **prefer** to play.
 
 ### For event organizers
@@ -16,17 +10,13 @@ Click the `:job(s):` you **prefer** to play.
 - full: 2 tanks, 2 healers, 4 dps (this is the default if you leave off the argument)
 - light: 1 tank, 1 healer, 2 dps
 - alliance: 3 tanks, 6 healers, 15 dps
-<<<<<<< HEAD
 - custom: *a* tanks, *b* healers, *c* dps (disabled for now)
-=======
-- custom: *a* tanks, *b* healers, *c* dps (Note: this has not be tested well yet!)
->>>>>>> 334412beb6acc212f587e5768893c87d23031bfd
 
-Anyone who signs up will be grouped and given job assignments.
+Anyone who signs up will be given suggested job or role assignments.
 
 ### For installation
 
-Install git and node.js, then `git clone && cd ChiBot && npm install && node .`
+Install git and node.js, then `git clone https://github.com/gaogaostegosaurus/ChiBot.git && cd ChiBot && bash start.sh`
 
 The clone command creates a ChiBot folder inside the folder you run the command from.
 
@@ -41,13 +31,8 @@ You will also need emojis for every job in lowercase (`:pld:`, `:war:`, etc.) as
 - Since there is no healer flex icon on the right, they didn't sign up with any healer jobs.
 - (This is slightly outdated as of 8/8/2020 but same ideas hold.)
 
-### How does the bot decide where to put people?
-1) Priority goes to first signups. If the bot can place you, it will place you before anyone else that signs up afterwards.
-2) If you pick more than one role, the bot attempts to use you to fill the largest gap between current and needed signups. In the event of a tie, since someone has to win tiebreakers, tank > healer > DPS. (DPS likely often win though because of the larger amount of slots.)
-3) Anyone that doesn't fit gets placed at the top of the backup list, sorted by their signup time.
-
 ## To do
 
 1) Backup list is pretty janky
 2) More algorithm testing
-3) A non-volatile db, lol
+3) A non-volatile db, lol (maybe use Google Sheets API)
