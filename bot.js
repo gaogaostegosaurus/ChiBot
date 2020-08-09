@@ -104,8 +104,8 @@ client.on('message', (message) => {
     // Create base embed
     const signupEmbed = new Discord.MessageEmbed()
       .setTitle(embedTitle)
-      .setDescription('About: https://github.com/gaogaostegosaurus/ChiBot')
-      .setFooter('TL;DR: Click on job(s) you actually want to play.')
+      .setDescription('How to use: https://github.com/gaogaostegosaurus/ChiBot\nTL;DR: Click on job(s) you actually want to play.')
+      // .setFooter('')
       .setTimestamp();
 
     let initialFieldValue = '';
