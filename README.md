@@ -2,7 +2,11 @@
 
 ## How to use
 
+<<<<<<< HEAD
 ### Signing up
+=======
+`git clone https://github.com/gaogaostegosaurus/ChiBot.git && cd ChiBot && bash start.sh`
+>>>>>>> 334412beb6acc212f587e5768893c87d23031bfd
 
 Click the `:job(s):` you **prefer** to play.
 
@@ -12,7 +16,11 @@ Click the `:job(s):` you **prefer** to play.
 - full: 2 tanks, 2 healers, 4 dps (this is the default if you leave off the argument)
 - light: 1 tank, 1 healer, 2 dps
 - alliance: 3 tanks, 6 healers, 15 dps
+<<<<<<< HEAD
 - custom: *a* tanks, *b* healers, *c* dps (disabled for now)
+=======
+- custom: *a* tanks, *b* healers, *c* dps (Note: this has not be tested well yet!)
+>>>>>>> 334412beb6acc212f587e5768893c87d23031bfd
 
 Anyone who signs up will be grouped and given job assignments.
 
