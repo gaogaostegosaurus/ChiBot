@@ -101,20 +101,19 @@ client.on('message', (message) => {
     signupEmbed.addField('Group 1', initialFieldValue, true);
 
     message.channel.send(signupEmbed)
-      .then((embedMessage) => {
+      .then(async (embedMessage) => {
         const filter = (reaction, user) => emojiList.includes(reaction.emoji) && !user.bot;
         const collector = embedMessage.createReactionCollector(filter, {
           dispose: true, // dispose true is needed to track remove events, I don't know why
         });
 
         // Add job emojis for reacting
-        emojiList.forEach(async (emoji) => {
-          await embedMessage.react(emoji);
-        });
+        for (let i = 0; i < emojiList.length; i += 1) {
+          if (embedMessage) {
+            embedMessage.react(emojiList[i]);
+          }
+        }
 
-        let group1Array = [];
-        let group2Array = [];
-        let group3Array = [];
         let embedTimeout;
 
         const getGroupFieldValue = ({ // Function to build starter lists
@@ -169,7 +168,7 @@ client.on('message', (message) => {
             }
 
             // Create display for field
-            let display = jobIcons.concat(' ', e.name.slice(0, 21));
+            let display = jobIcons.concat(' ', e.name.slice(0, 15));
             if (flexIcons) {
               display = display.concat('  (Flex:', flexIcons, ')');
             }
@@ -194,19 +193,17 @@ client.on('message', (message) => {
           return groupFieldValue;
         };
 
-        let fillArray = []; // Define here for the next two functions?
-
-        const fillGroup = ({ // Function for (re)building starter lists
-          group,
+        const getGroupArray = ({ // Function for (re)building starter lists
+          array,
         } = {}) => {
+          if (!array || array.length === 0) { return [[], []]; } // Array is empty
           let tankArray = [];
           let healerArray = [];
           let dpsArray = [];
 
           // This loop tries to create a group with the fewest possible signups
           // If it fails, then it increases by 1 and repeats.
-          for (let i = 0; i < fillArray.length; i += 1) {
-            if (fillArray.length === 0) { break; } // Array is empty
+          for (let i = 0; i < array.length; i += 1) {
             // Reset arrays
             tankArray = [];
             healerArray = [];
@@ -218,44 +215,44 @@ client.on('message', (message) => {
             const thdArray = [];
 
             for (let j = 0; j <= i; j += 1) {
-              if (fillArray[j].tank.length >= 1
-              && fillArray[j].healer.length >= 1
-              && fillArray[j].dps.length >= 1) {
-                thdArray.push(fillArray[j]);
-              } else if (fillArray[j].tank.length >= 1
-              && fillArray[j].healer.length >= 1) {
-                thArray.push(fillArray[j]);
-              } else if (fillArray[j].tank.length >= 1
-              && fillArray[j].dps.length >= 1) {
-                tdArray.push(fillArray[j]);
-              } else if (fillArray[j].healer.length >= 1
-              && fillArray[j].dps.length >= 1) {
-                hdArray.push(fillArray[j]);
-              } else if (fillArray[j].tank.length >= 1) {
+              if (array[j].tank.length >= 1
+              && array[j].healer.length >= 1
+              && array[j].dps.length >= 1) {
+                thdArray.push(array[j]);
+              } else if (array[j].tank.length >= 1
+              && array[j].healer.length >= 1) {
+                thArray.push(array[j]);
+              } else if (array[j].tank.length >= 1
+              && array[j].dps.length >= 1) {
+                tdArray.push(array[j]);
+              } else if (array[j].healer.length >= 1
+              && array[j].dps.length >= 1) {
+                hdArray.push(array[j]);
+              } else if (array[j].tank.length >= 1) {
                 if (tankArray.length < tankCap) {
                   tankArray.push({
-                    time: fillArray[j].time,
-                    id: fillArray[j].id,
-                    name: fillArray[j].name,
-                    tank: fillArray[j].tank,
+                    time: array[j].time,
+                    id: array[j].id,
+                    name: array[j].name,
+                    tank: array[j].tank,
                   });
                 }
-              } else if (fillArray[j].healer.length >= 1) {
+              } else if (array[j].healer.length >= 1) {
                 if (healerArray.length < healerCap) {
                   healerArray.push({
-                    time: fillArray[j].time,
-                    id: fillArray[j].id,
-                    name: fillArray[j].name,
-                    healer: fillArray[j].healer,
+                    time: array[j].time,
+                    id: array[j].id,
+                    name: array[j].name,
+                    healer: array[j].healer,
                   });
                 }
-              } else if (fillArray[j].dps.length >= 1) {
+              } else if (array[j].dps.length >= 1) {
                 if (dpsArray.length < dpsCap) {
                   dpsArray.push({
-                    time: fillArray[j].time,
-                    id: fillArray[j].id,
-                    name: fillArray[j].name,
-                    dps: fillArray[j].dps,
+                    time: array[j].time,
+                    id: array[j].id,
+                    name: array[j].name,
+                    dps: array[j].dps,
                   });
                 }
               }
@@ -411,102 +408,72 @@ client.on('message', (message) => {
                 + hdArray.length + thdArray.length;
             }
 
-            let sufficientTanks = false;
-            let sufficientHealers = false;
-            let sufficientDPS = false;
-
-            if (tankArray.length >= tankCap) { // >= because of single-role shenanigans
-              sufficientTanks = true;
-            }
-
-            if (healerArray.length >= healerCap) {
-              sufficientHealers = true;
-            }
-
-            if (dpsArray.length >= dpsCap) {
-              sufficientDPS = true;
-            }
-
-            if (sufficientTanks && sufficientHealers && sufficientDPS) {
+            if (tankArray.length >= tankCap
+            && healerArray.length >= healerCap
+            && dpsArray.length >= dpsCap) {
+              // Break early if all members for group found
               console.log(`Found sufficient members after ${i + 1} entries`);
-              // Dump everyone else in overflow
               break;
             }
           }
 
-          if (group === '1') {
-            group1Array = tankArray.concat(healerArray, dpsArray);
-            group1Array.sort((a, b) => ((a.time > b.time) ? 1 : -1));
-          } else if (group === '2') {
-            group2Array = tankArray.concat(healerArray, dpsArray);
-            group2Array.sort((a, b) => ((a.time > b.time) ? 1 : -1));
-          } else if (group === '3') {
-            group3Array = tankArray.concat(healerArray, dpsArray);
-            group3Array.sort((a, b) => ((a.time > b.time) ? 1 : -1));
+          const returnArray = [[], []];
+
+          // Sort arrays by time (just in case, probably)
+          tankArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
+          healerArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
+          dpsArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
+
+          for (let i = 0; i < Math.min(tankArray.length, tankCap); i += 1) {
+            returnArray[0].push(tankArray[i]);
           }
+          for (let i = 0; i < Math.min(healerArray.length, healerCap); i += 1) {
+            returnArray[0].push(healerArray[i]);
+          }
+          for (let i = 0; i < Math.min(dpsArray.length, dpsCap); i += 1) {
+            returnArray[0].push(dpsArray[i]);
+          }
+
+          const tempArray = [...array];
+
+          for (let i = 0; i < returnArray[0].length; i += 1) {
+            for (let j = tempArray.length - 1; j >= 0; j -= 1) {
+              // Go backwards due to splicing
+              if (tempArray[j].id === returnArray[0][i].id) { tempArray.splice(j, 1); }
+            }
+          }
+
+          returnArray[1] = tempArray;
+
+          return returnArray;
         };
 
         const editEmbed = () => {
           signupEmbed.fields = [];
 
           // Set signupArray to a temporary fill Array
-          fillArray = [...signupArray];
 
-          fillGroup({ group: '1' });
-          if (group1Array && group1Array.length > 0) {
-            const group1FieldValue = getGroupFieldValue({ groupArray: group1Array, group: '1' });
-            signupEmbed.addField('Group 1', group1FieldValue, true);
-          // } else {
-          //   let group1FieldValue = '';
-          //   for (let i = 1; i <= groupCap; i += 1) {
-          //     // Fill with string showing open slots
-          //     group1FieldValue = group1FieldValue.concat(openString);
-          //     // Add carriage return for next line
-          //     if (i < groupCap) { group1FieldValue = group1FieldValue.concat('\n'); }
-          //   }
-          //   signupEmbed.addField('Group 1', group1FieldValue, true);
-          //   // signupEmbed.addField('\u200B', group1FieldValue[1], true);
-          //   // signupEmbed.addField('\u200B', group1FieldValue[2], true);
-          // it appears I forgot I already wrote this
-          }
+          const tempArray1 = getGroupArray({ array: signupArray });
+          const group1FieldValue = getGroupFieldValue({ groupArray: tempArray1[0] });
+          signupEmbed.addField('Group 1', group1FieldValue, true);
 
-          for (let i = 0; i < group1Array.length; i += 1) {
-            for (let j = fillArray.length - 1; j >= 0; j -= 1) { // Go backwards due to splicing
-              if (fillArray[j].id === group1Array[i].id) { fillArray.splice(j, 1); }
-            }
-          }
-
-          fillGroup({ group: '2' });
-          if (group2Array && group2Array.length > 0) {
-            // signupEmbed.addField('\u200B', '\u200B') // Create a spacer field
-            const group2FieldValue = getGroupFieldValue({ groupArray: group2Array, group: '2' });
+          const tempArray2 = getGroupArray({ array: tempArray1[1] });
+          if (tempArray2[0] && tempArray2[0].length > 0) {
+            const group2FieldValue = getGroupFieldValue({ groupArray: tempArray2[0] });
             signupEmbed.addField('Group 2', group2FieldValue, true);
           }
 
-          for (let i = 0; i < group2Array.length; i += 1) {
-            for (let j = fillArray.length - 1; j >= 0; j -= 1) { // Go backwards due to splicing
-              if (fillArray[j].id === group2Array[i].id) { fillArray.splice(j, 1); }
-            }
-          }
-
-          fillGroup({ group: '3' });
-          if (group3Array && group3Array.length > 0) {
-            // signupEmbed.addField('\u200B', '\u200B') // Create a spacer field
-            const group3FieldValue = getGroupFieldValue({ groupArray: group3Array, group: '3' });
+          const tempArray3 = getGroupArray({ array: tempArray2[1] });
+          if (tempArray3[0] && tempArray3[0].length > 0) {
+            const group3FieldValue = getGroupFieldValue({ groupArray: tempArray3[0] });
             signupEmbed.addField('Group 3', group3FieldValue, true);
           }
 
-          for (let i = 0; i < group3Array.length; i += 1) {
-            for (let j = fillArray.length - 1; j >= 0; j -= 1) { // Go backwards due to splicing
-              if (fillArray[j].id === group3Array[i].id) { fillArray.splice(j, 1); }
-            }
-          }
-
-          if (fillArray && fillArray.length > 0) {
+          if (tempArray3[1] && tempArray3[1].length > 0) {
             let overflowFieldValue = '';
-            fillArray.forEach((e) => {
+            tempArray3[1].forEach((e) => {
               overflowFieldValue = overflowFieldValue.concat(e.name);
-              if (fillArray.indexOf(e) < fillArray.length - 1) {
+              if (tempArray3[1].indexOf(e) < tempArray3[1].length - 1) {
                 overflowFieldValue = overflowFieldValue.concat(', ');
               }
             });
