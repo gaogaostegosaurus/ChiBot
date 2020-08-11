@@ -512,11 +512,16 @@ client.on('message', (message) => {
               }
             });
             signupEmbed.addField('Overflow', overflowFieldValue);
+          } else {
+            console.log('Overflow group not needed (array is empty)');
           }
+
+          console.log('Embed editted');
 
           clearTimeout(embedTimeout);
           embedTimeout = setTimeout(() => {
             embedMessage.edit(signupEmbed);
+            console.log('Embed editted');
           }, embedDelay);
         };
 
