@@ -196,7 +196,11 @@ client.on('message', (message) => {
         const getGroupArray = ({ // Function for (re)building starter lists
           array,
         } = {}) => {
-          if (!array || array.length === 0) { return [[], []]; } // Array is empty
+          if (!array || array.length === 0) {
+            console.log('Received empty array; returning empty array');
+            return [[], []];
+          }
+
           let tankArray = [];
           let healerArray = [];
           let dpsArray = [];
@@ -296,7 +300,8 @@ client.on('message', (message) => {
                     flex: ['healer'],
                   });
                   thArray.splice(0, 1);
-                } else if (dpsFlex > 0 && tdCount > 0) {
+                } else
+                if (dpsFlex > 0 && tdCount > 0) {
                   tankArray.push({
                     time: tdArray[0].time,
                     id: tdArray[0].id,
@@ -305,7 +310,8 @@ client.on('message', (message) => {
                     flex: ['dps'],
                   });
                   tdArray.splice(0, 1);
-                } else if (healerFlex > 0 && thCount > 0) {
+                } else
+                if (healerFlex > 0 && thCount > 0) {
                   tankArray.push({
                     time: thArray[0].time,
                     id: thArray[0].id,
@@ -324,7 +330,8 @@ client.on('message', (message) => {
                   });
                   thdArray.splice(0, 1);
                 }
-              } else if (healerFlexNeed > 0 && healerFlexNeed >= maxFlexNeed) {
+              } else
+              if (healerFlexNeed > 0 && healerFlexNeed >= maxFlexNeed) {
                 if (tankFlex > 0 && tankNeed - tankFlex <= dpsNeed - dpsFlex && thCount > 0) {
                   healerArray.push({
                     time: thArray[0].time,
@@ -408,8 +415,7 @@ client.on('message', (message) => {
                 + hdArray.length + thdArray.length;
             }
 
-            if (tankArray.length >= tankCap
-            && healerArray.length >= healerCap
+            if (tankArray.length >= tankCap && healerArray.length >= healerCap
             && dpsArray.length >= dpsCap) {
               // Break early if all members for group found
               console.log(`Found sufficient members after ${i + 1} entries`);
@@ -436,15 +442,20 @@ client.on('message', (message) => {
 
           const tempArray = [...array];
 
+          console.log('Splicing duplicates from temp Array');
+
           for (let i = 0; i < returnArray[0].length; i += 1) {
             for (let j = tempArray.length - 1; j >= 0; j -= 1) {
               // Go backwards due to splicing
-              if (tempArray[j].id === returnArray[0][i].id) { tempArray.splice(j, 1); }
+              if (tempArray[j].id === returnArray[0][i].id) {
+                console.log(`Splicing ${tempArray[j]}`);
+                tempArray.splice(j, 1);
+              }
             }
           }
 
           returnArray[1] = tempArray;
-
+          console.log(`Returning ${JSON.stringify(returnArray)}`);
           return returnArray;
         };
 
@@ -452,17 +463,19 @@ client.on('message', (message) => {
           signupEmbed.fields = [];
 
           // Set signupArray to a temporary fill Array
-
+          console.log('Getting group 1');
           const tempArray1 = getGroupArray({ array: signupArray });
           const group1FieldValue = getGroupFieldValue({ groupArray: tempArray1[0] });
           signupEmbed.addField('Group 1', group1FieldValue, true);
 
+          console.log('Getting group 2');
           const tempArray2 = getGroupArray({ array: tempArray1[1] });
           if (tempArray2[0] && tempArray2[0].length > 0) {
             const group2FieldValue = getGroupFieldValue({ groupArray: tempArray2[0] });
             signupEmbed.addField('Group 2', group2FieldValue, true);
           }
 
+          console.log('Getting group 3');
           const tempArray3 = getGroupArray({ array: tempArray2[1] });
           if (tempArray3[0] && tempArray3[0].length > 0) {
             const group3FieldValue = getGroupFieldValue({ groupArray: tempArray3[0] });
@@ -470,6 +483,7 @@ client.on('message', (message) => {
           }
 
           if (tempArray3[1] && tempArray3[1].length > 0) {
+            console.log('Getting overflow');
             let overflowFieldValue = '';
             tempArray3[1].forEach((e) => {
               overflowFieldValue = overflowFieldValue.concat(e.name);
@@ -522,7 +536,7 @@ client.on('message', (message) => {
           }
 
           // Debug check for signup Array
-          console.log(`${JSON.stringify(signupArray)}`);
+          // console.log(`${JSON.stringify(signupArray)}`);
 
           editEmbed();
         });
