@@ -425,7 +425,7 @@ client.on('message', (message) => {
 
           const returnArray = [[], []];
 
-          // Sort arrays by time (just in case, probably)
+          // Sort arrays by time (just in case? probably?)
           tankArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
           healerArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
           dpsArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
@@ -445,7 +445,7 @@ client.on('message', (message) => {
 
           const tempArray = [...array];
 
-          console.log('Splicing duplicates from temp array');
+          console.log('Now splicing duplicates from temp array');
 
           for (let i = 0; i < returnArray[0].length; i += 1) {
             for (let j = tempArray.length - 1; j >= 0; j -= 1) {
