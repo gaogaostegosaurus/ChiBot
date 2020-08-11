@@ -448,7 +448,7 @@ client.on('message', (message) => {
             for (let j = tempArray.length - 1; j >= 0; j -= 1) {
               // Go backwards due to splicing
               if (tempArray[j].id === returnArray[0][i].id) {
-                console.log(`Splicing ${tempArray[j]}`);
+                console.log(`Splicing ${JSON.stringify(tempArray[j])}`);
                 tempArray.splice(j, 1);
               }
             }
