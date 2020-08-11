@@ -219,6 +219,8 @@ client.on('message', (message) => {
             const hdArray = [];
             const thdArray = [];
 
+            console.log('Sorting players into role arrays');
+
             for (let j = 0; j <= i; j += 1) {
               if (array[j].tank.length >= 1
               && array[j].healer.length >= 1
@@ -262,6 +264,10 @@ client.on('message', (message) => {
                 }
               }
             }
+
+            console.log('Finished sorting players into role arrays');
+
+            console.log('Assigning flex players');
 
             // Reassign flex signups
             let flexCount = thArray.length + tdArray.length
@@ -416,10 +422,12 @@ client.on('message', (message) => {
                 + hdArray.length + thdArray.length;
             }
 
+            console.log('Finished assigning flex players');
+
             if (tankArray.length >= tankCap && healerArray.length >= healerCap
             && dpsArray.length >= dpsCap) {
               // Break early if all members for group found
-              console.log(`Found sufficient members after ${i + 1} entries`);
+              console.log(`Found sufficient members after ${i + 1} entries; breaking`);
               break;
             } else {
               console.log(`Did not find sufficient members with ${i + 1} entries`);
