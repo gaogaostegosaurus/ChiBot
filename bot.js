@@ -208,6 +208,7 @@ client.on('message', (message) => {
           // This loop tries to create a group with the fewest possible signups
           // If it fails, then it increases by 1 and repeats.
           for (let i = 0; i < array.length; i += 1) {
+            console.log(`Starting loop with ${i + 1} entries`);
             // Reset arrays
             tankArray = [];
             healerArray = [];
@@ -420,15 +421,21 @@ client.on('message', (message) => {
               // Break early if all members for group found
               console.log(`Found sufficient members after ${i + 1} entries`);
               break;
+            } else {
+              console.log(`Did not find sufficient members with ${i + 1} entries`);
             }
           }
 
           const returnArray = [[], []];
 
+          console.log('Sorting role arrays');
+
           // Sort arrays by time (just in case? probably?)
-          tankArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
-          healerArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
-          dpsArray.sort((a, b) => ((a.time > b.time) ? 1 : -1));
+          if (tankArray.length > 1) { tankArray.sort((a, b) => ((a.time > b.time) ? 1 : -1)); }
+          if (healerArray.length > 1) { healerArray.sort((a, b) => ((a.time > b.time) ? 1 : -1)); }
+          if (dpsArray.length > 1) { dpsArray.sort((a, b) => ((a.time > b.time) ? 1 : -1)); }
+
+          console.log('Adding people by role to returnArray[0]');
 
           for (let i = 0; i < Math.min(tankArray.length, tankCap); i += 1) {
             returnArray[0].push(tankArray[i]);
@@ -441,11 +448,13 @@ client.on('message', (message) => {
           }
 
           // Sort final array by time
-          returnArray[0].sort((a, b) => ((a.time > b.time) ? 1 : -1));
+          if (returnArray[0].length > 1) {
+            returnArray[0].sort((a, b) => ((a.time > b.time) ? 1 : -1));
+          }
 
           const tempArray = [...array];
 
-          console.log('Now splicing duplicates from temp array');
+          console.log('Splicing duplicates from temp array');
 
           for (let i = 0; i < returnArray[0].length; i += 1) {
             for (let j = tempArray.length - 1; j >= 0; j -= 1) {
