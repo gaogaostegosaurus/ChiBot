@@ -440,9 +440,12 @@ client.on('message', (message) => {
             returnArray[0].push(dpsArray[i]);
           }
 
+          // Sort final array by time
+          returnArray[0].sort((a, b) => ((a.time > b.time) ? 1 : -1));
+
           const tempArray = [...array];
 
-          console.log('Splicing duplicates from temp Array');
+          console.log('Splicing duplicates from temp array');
 
           for (let i = 0; i < returnArray[0].length; i += 1) {
             for (let j = tempArray.length - 1; j >= 0; j -= 1) {
