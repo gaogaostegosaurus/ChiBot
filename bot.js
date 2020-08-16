@@ -278,27 +278,19 @@ client.on('message', (message) => {
             // Add icons for flex roles
             let flexIcons = '';
             if (e.flex) {
-              e.flex.forEach((role) => {
-                flexIcons = flexIcons.concat(reactionEmoji[role]);
-              });
+              e.flex.forEach((role) => { flexIcons = flexIcons.concat(reactionEmoji[role]); });
             }
 
             // Create display for field
             let display = jobIcons.concat(' ', e.name.slice(0, characterLimit));
-            if (e.id === '221227903139053568') {
-              jobIcons.concat(' ', chiString);
-            }
-            if (flexIcons) {
-              display = display.concat('  (Flex:', flexIcons, ')');
-            }
+            if (e.id === '221227903139053568') { display = jobIcons.concat(' ', chiString); }
+            if (flexIcons) { display = display.concat('  (Flex:', flexIcons, ')'); }
 
             // Add entire string to group field value
             groupFieldValue = groupFieldValue.concat(display);
 
             // Add return to field if not final entry
-            if (groupArray.indexOf(e) < groupCap - 1) {
-              groupFieldValue = groupFieldValue.concat('\n');
-            }
+            if (groupArray.indexOf(e) < groupCap - 1) { groupFieldValue = groupFieldValue.concat('\n'); }
           });
 
           // Fill any remaining slots with open string
