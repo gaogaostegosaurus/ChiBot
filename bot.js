@@ -131,7 +131,7 @@ const embedDelay = 1000; // ms to wait before changing embed (to prevent rate li
 const openString = '<OPEN>'; // Set string to designate open slots
 const maxJobIcons = 2; // Maximum number of icons next to a name - changes to role icon after this
 const characterLimit = 21; // Maximum character count of name (prevent field value overflow)
-const chiString = 'THE NUMBER ONE C';
+const chiString = 'Our Grated FC Leader Chisus Crust';
 const client = new Discord.Client();
 
 // Define jobs - these strings need to be defined as emojis in the channel
