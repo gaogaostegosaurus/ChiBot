@@ -131,7 +131,7 @@ const embedDelay = 1000; // ms to wait before changing embed (to prevent rate li
 const openString = '<OPEN>'; // Set string to designate open slots
 const maxJobIcons = 2; // Maximum number of icons next to a name - changes to role icon after this
 const characterLimit = 21; // Maximum character count of name (prevent field value overflow)
-const chiString = 'Our Grated FC Leader Chisus Crust';
+// const chiString = 'Our Grated FC Leader Chisus Crust';
 const client = new Discord.Client();
 
 // Define jobs - these strings need to be defined as emojis in the channel
@@ -283,7 +283,7 @@ client.on('message', (message) => {
 
             // Create display for field
             let display = jobIcons.concat(' ', e.name.slice(0, characterLimit));
-            if (e.id === '221227903139053568') { display = jobIcons.concat(' ', chiString); }
+            // if (e.id === '221227903139053568') { display = jobIcons.concat(' ', chiString); }
             if (flexIcons) { display = display.concat('  (Flex:', flexIcons, ')'); }
 
             // Add entire string to group field value
