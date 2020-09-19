@@ -380,11 +380,13 @@ client.on('message', (message) => {
 
             console.log('Assigning flex players');
 
-            // Reassign flex signups
-            let flexCount = thArray.length + tdArray.length
-              + hdArray.length + thdArray.length;
-
-            while (flexCount > 0) {
+            // Conditions are "if tank/healer/dps flex arrays are not zeroed out and there is a tank/healer/dps spot"
+            // Well, probably, anyway...
+            while (
+              (thArray.length + tdArray.length + thdArray.length > 0 && tankCap > tankArray.length)
+              || (thArray.length + hdArray.length + thdArray.length > 0 && healerCap > healerArray.length)
+              || (tdArray.length + hdArray.length + thdArray.length > 0 && dpsCap > dpsArray.length)
+            ) {
               const tankCount = tankArray.length;
               const healerCount = healerArray.length;
               const dpsCount = dpsArray.length;
@@ -487,7 +489,8 @@ client.on('message', (message) => {
                   });
                   thdArray.splice(0, 1);
                 }
-              } else if (dpsFlexNeed > 0 && dpsFlexNeed >= maxFlexNeed) {
+              } else
+              if (dpsFlexNeed > 0 && dpsFlexNeed >= maxFlexNeed) {
                 if (tankFlex > 0 && tankNeed - tankFlex <= healerNeed - healerFlex && tdCount > 0) {
                   dpsArray.push({
                     time: tdArray[0].time,
@@ -529,8 +532,8 @@ client.on('message', (message) => {
               }
 
               // Update flex signup count
-              flexCount = thArray.length + tdArray.length
-                + hdArray.length + thdArray.length;
+              // flexCount = thArray.length + tdArray.length
+              //   + hdArray.length + thdArray.length;
             }
 
             console.log('Finished assigning flex players');
